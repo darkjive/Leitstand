@@ -11,4 +11,7 @@
 
 ## Offene Tasks
 
-- Test-Setup (Vitest) + CI-Workflow ergänzen
+- Test-Setup (Vitest) ergänzen (CI-Workflow steht: `.github/workflows/ci.yml`)
+- Widgets vom Mount-Fetch-Pattern lösen: `react-hooks/set-state-in-effect` und
+  `react-hooks/purity` sind in `eslint.config.js` auf `warn` gesetzt, weil jedes
+  Widget im Effect synchron `loading` setzt (12 Warnungen). Danach wieder auf `error`.

@@ -35,3 +35,7 @@ public/audio/*.wav
 # Lokale Agent-/Tool-Artefakte
 .playwright-mcp/
 dashboard-smoke.png
+
+# Vendored agent skill files — local tooling, not part of the project
+.agents/
+.claude/

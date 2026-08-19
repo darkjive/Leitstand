@@ -9,29 +9,31 @@
 
 > **Futuristic homelab dashboard with real-time system monitoring and cyberpunk aesthetics inspired by pxlngn.net**
 
+![Homelab Control Center dashboard](docs/screenshot.png)
+
 ## ✨ Features
 
 ### Widgets (real backend data)
 
-| Widget                                          | Data Source                                           |
-| ----------------------------------------------- | ----------------------------------------------------- |
-| **System Metrics** (CPU, RAM, Disk, Temp, VRAM) | `systeminformation` + nvidia-smi/amdgpu sysfs         |
-| **Weather**                                     | wttr.in API (proxied through the backend)             |
-| **Docker Monitoring**                           | Docker socket                                         |
-| **ChatBot**                                     | Local [Ollama](https://ollama.ai) (auto-discovers)    |
-| **Git Widget**                                  | status, pull, push, fetch, commit, bulk operations    |
-| **NPM Script Runner**                           | runs scripts from `package.json`                      |
-| **Log Aggregator**                              | tails files under the project, `/var/log` and `$HOME` |
-| **Web Scraper**                                 | Playwright/Chromium (see NixOS note below)            |
-| **Port Killer**                                 | requires `lsof`                                       |
-| **Firewall Monitor**                            | requires UFW (not available on NixOS)                 |
-| **Port Scanner**                                | requires `nmap`/`ss`                                  |
-| **GitHub Stats**                                | GitHub API (set your username in Settings)            |
-| **Hacker News Feed**                            | HN Firebase API                                       |
-| **RSS Feed** / **Custom RSS Feed**              | any RSS/Atom URL (via rss2json.com CORS proxy)        |
-| **Service Status**                              | Statuspage.io API (Cloudflare, GitHub, OpenAI, etc.)  |
-| **Connectivity Monitor**                        | HTTP latency checks to internet endpoints             |
-| **Network Outage Map**                          | visualizes connectivity status                        |
+| Widget                                                                                                                             | Data Source                                           |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| **System Metrics** — CPU · Memory · Performance graph · VRAM · Storage · Temperature (six independent widgets, shared data stream) | `systeminformation` + nvidia-smi/amdgpu sysfs         |
+| **Weather**                                                                                                                        | wttr.in API (proxied through the backend)             |
+| **Docker Monitoring**                                                                                                              | Docker socket                                         |
+| **ChatBot**                                                                                                                        | Local [Ollama](https://ollama.ai) (auto-discovers)    |
+| **Git Widget**                                                                                                                     | status, pull, push, fetch, commit, bulk operations    |
+| **NPM Script Runner**                                                                                                              | runs scripts from `package.json`                      |
+| **Log Aggregator**                                                                                                                 | tails files under the project, `/var/log` and `$HOME` |
+| **Web Scraper**                                                                                                                    | Playwright/Chromium (see NixOS note below)            |
+| **Port Killer**                                                                                                                    | requires `lsof`                                       |
+| **Firewall Monitor**                                                                                                               | requires UFW (not available on NixOS)                 |
+| **Port Scanner**                                                                                                                   | requires `nmap`/`ss`                                  |
+| **GitHub Stats**                                                                                                                   | GitHub API (set your username in Settings)            |
+| **Hacker News Feed**                                                                                                               | HN Firebase API                                       |
+| **RSS Feed** / **Custom RSS Feed**                                                                                                 | any RSS/Atom URL (via rss2json.com CORS proxy)        |
+| **Service Status**                                                                                                                 | Statuspage.io API (Cloudflare, GitHub, OpenAI, etc.)  |
+| **Connectivity Monitor**                                                                                                           | HTTP latency checks to internet endpoints             |
+| **Network Outage Map**                                                                                                             | visualizes connectivity status                        |
 
 ### Local-only widgets (no backend)
 
@@ -82,7 +84,7 @@
 ### Installation
 
 ```bash
-git clone <repo-url> homelab-dashboard
+git clone https://github.com/darkjive/homelab-dashboard.git
 cd homelab-dashboard
 pnpm install
 
@@ -107,11 +109,12 @@ The dashboard works out of the box with defaults. For overrides, copy `.env.exam
 cp .env.example .env
 ```
 
-| Variable     | Default                  | Purpose                                                     |
-| ------------ | ------------------------ | ----------------------------------------------------------- |
-| `OLLAMA_URL` | `http://localhost:11434` | Ollama server URL (chatbot proxy)                           |
-| `BIND_HOST`  | `127.0.0.1`              | Network interface to bind the backend to (loopback default) |
-| `PORT`       | `3010`                   | Backend port (also picked up by the Vite proxy + Electron)  |
+| Variable          | Default                  | Purpose                                                                                                         |
+| ----------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| `OLLAMA_URL`      | `http://localhost:11434` | Ollama server URL (chatbot proxy)                                                                               |
+| `BIND_HOST`       | `127.0.0.1`              | Network interface to bind the backend to (loopback default)                                                     |
+| `PORT`            | `3010`                   | Backend port (also picked up by the Vite proxy + Electron)                                                      |
+| `DASHBOARD_TOKEN` | _(empty)_                | Shared token for destructive endpoints. Empty = open (loopback default). **Required** when `BIND_HOST=0.0.0.0`. |
 
 > Frontend dev is `5173`, Vite preview is `4173`.
 
@@ -126,11 +129,22 @@ Additional guards:
 - **Ollama proxy whitelist**: only `tags/ps/version/generate/chat/show` are proxied — model management endpoints are blocked.
 - **Path validation**: git/npm/log endpoints resolve paths and block sensitive system prefixes (`/etc`, `/proc`, `/root`, …); log tailing is limited to the project dir, `/var/log` and `$HOME` (minus `~/.ssh`, `~/.gnupg`, `~/.aws`, `~/.kube`, `~/.docker`).
 
-If you really need LAN access, opt in explicitly:
+- **Optional token gate**: set `DASHBOARD_TOKEN` to require an `X-Dashboard-Token` header on
+  **the entire `/api` surface — reads included**, plus a `?token=` query param on the metrics
+  WebSocket (browsers cannot set headers on a WS handshake). Reads are gated because endpoints
+  like `/api/git/scan`, `/api/logs/lines` and `/api/ports` expose filesystem layout, log contents
+  and running processes — gating only the destructive half would leave an exposed instance wide
+  open. `/health` stays open for uptime probes. Configure the matching token under
+  **Settings → General → Dashboard Token** in the browser. When unset, the API stays open
+  (fine for the loopback default). The token is compared in constant time.
+
+If you really need LAN access, opt in explicitly **and set a token**:
 
 ```bash
-BIND_HOST=0.0.0.0 pnpm dev:server   # exposes backend to the network — your responsibility
+DASHBOARD_TOKEN=$(openssl rand -hex 16) BIND_HOST=0.0.0.0 pnpm dev:server   # exposes backend — token now required
 ```
+
+The server logs a loud warning on startup if it binds to a non-loopback interface without a token.
 
 ### Optional system tools
 
@@ -187,8 +201,11 @@ homelab-dashboard/
 │       └── portKiller.ts
 ├── src/
 │   ├── components/               # One file per widget (+ Toaster)
+│   │   └── metrics/              # Six metric widgets (CPU, Memory, Graph, VRAM, Storage, Temp)
 │   ├── lib/
 │   │   ├── settings.ts           # useSetting/useSettingJSON hooks (localStorage + sync)
+│   │   ├── metricsStore.ts       # Singleton metrics store (one WS + HTTP-polling fallback)
+│   │   ├── api.ts                # apiFetch wrapper (attaches optional dashboard token)
 │   │   └── toast.ts              # toast() notifications
 │   ├── App.tsx                   # Main dashboard grid layout
 │   ├── index.css                 # Tailwind + cyberpunk theme
@@ -227,6 +244,8 @@ homelab-dashboard/
 | `WebSocket /ws`                  | Real-time metrics stream (2s broadcast)           |
 
 All endpoints are rate-limited (1000 req/min general, stricter for scraper and Ollama).
+When `DASHBOARD_TOKEN` is set, everything under `/api` plus the WebSocket requires the token —
+only `GET /health` stays open.
 
 ## 🧩 Optional Integrations
 
@@ -278,7 +297,7 @@ Heavily inspired by **[pxlngn.net](https://pxlngn.net)**:
 
 ## 📄 License
 
-MIT License.
+MIT — see [LICENSE](LICENSE).
 
 ## 🙏 Acknowledgments
 
