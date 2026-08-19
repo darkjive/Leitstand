@@ -40,47 +40,52 @@ interface LayoutItem {
   minH?: number;
 }
 
-// 12-column grid layout with standardized sizes
-// Widths: 3 (small), 6 (medium), 12 (large)
-// Heights: 3 (compact), 4 (normal), 6 (tall)
+// 12-column grid layout with standardized sizes.
+// Every row's widths sum to exactly 12 and all items in a row share the same
+// height, so react-grid-layout's vertical compaction can never stagger
+// columns into a "staircase" — each row's bottom edge lines up cleanly for
+// the next row. Heights are sized generously for content-heavy widgets
+// (chat, logs, docker, firewall) to avoid inner scrolling.
 const defaultLayout = [
-  // Row 1: Hero Section - Chatbot + System Metrics
-  { i: 'chatbot', x: 0, y: 0, w: 6, h: 6, minW: 6, minH: 6 },
-  { i: 'metrics-cpu', x: 6, y: 0, w: 3, h: 4, minW: 3, minH: 3 },
-  { i: 'metrics-memory', x: 9, y: 0, w: 3, h: 4, minW: 3, minH: 3 },
-  { i: 'metrics-graph', x: 6, y: 4, w: 6, h: 4, minW: 4, minH: 3 },
-  { i: 'metrics-vram', x: 6, y: 8, w: 3, h: 4, minW: 3, minH: 3 },
-  { i: 'metrics-storage', x: 9, y: 8, w: 3, h: 4, minW: 3, minH: 3 },
-  { i: 'metrics-temp', x: 6, y: 12, w: 3, h: 3, minW: 3, minH: 3 },
+  // Row 1: CPU, Storage + performance graph
+  { i: 'metrics-cpu', x: 0, y: 0, w: 3, h: 4, minW: 3, minH: 3 },
+  { i: 'metrics-storage', x: 3, y: 0, w: 3, h: 4, minW: 3, minH: 3 },
+  { i: 'metrics-graph', x: 6, y: 0, w: 6, h: 4, minW: 6, minH: 3 },
 
-  // Row 2: Dev Tools - Logs, Git, NPM
-  { i: 'log-aggregator', x: 0, y: 6, w: 6, h: 6, minW: 6, minH: 6 },
-  { i: 'git-status', x: 6, y: 6, w: 3, h: 6, minW: 3, minH: 4 },
-  { i: 'npm-script-runner', x: 9, y: 6, w: 3, h: 6, minW: 3, minH: 4 },
+  // Row 2: Memory, VRAM, Temperature — compact half-height strip
+  { i: 'metrics-memory', x: 0, y: 4, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'metrics-vram', x: 4, y: 4, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'metrics-temp', x: 8, y: 4, w: 4, h: 2, minW: 3, minH: 2 },
 
-  // Row 3: Services - Docker, GitHub, Service Status
-  { i: 'docker', x: 0, y: 12, w: 4, h: 4, minW: 4, minH: 4 },
-  { i: 'github', x: 4, y: 12, w: 4, h: 4, minW: 4, minH: 4 },
-  { i: 'service-status', x: 8, y: 12, w: 4, h: 4, minW: 3, minH: 4 },
+  // Row 3: Chatbot + Log Aggregator (content-heavy, extra height)
+  { i: 'chatbot', x: 0, y: 6, w: 6, h: 8, minW: 6, minH: 6 },
+  { i: 'log-aggregator', x: 6, y: 6, w: 6, h: 8, minW: 6, minH: 6 },
 
-  // Row 4: Communication - Weather
-  { i: 'weather', x: 0, y: 16, w: 12, h: 4, minW: 3, minH: 4 },
+  // Row 4: Dev tools
+  { i: 'git-status', x: 0, y: 14, w: 4, h: 6, minW: 4, minH: 4 },
+  { i: 'npm-script-runner', x: 4, y: 14, w: 4, h: 6, minW: 4, minH: 4 },
+  { i: 'docker', x: 8, y: 14, w: 4, h: 6, minW: 4, minH: 4 },
 
-  // Row 5: Content - News, RSS
-  { i: 'hacker-news', x: 0, y: 20, w: 3, h: 4, minW: 3, minH: 4 },
-  { i: 'custom-rss', x: 3, y: 20, w: 9, h: 4, minW: 6, minH: 4 },
+  // Row 5: Services
+  { i: 'github', x: 0, y: 20, w: 4, h: 4, minW: 4, minH: 4 },
+  { i: 'service-status', x: 4, y: 20, w: 4, h: 4, minW: 4, minH: 4 },
+  { i: 'weather', x: 8, y: 20, w: 4, h: 4, minW: 4, minH: 4 },
 
-  // Row 6: Network Outage Map + Web Scraper
-  { i: 'network-outage', x: 0, y: 24, w: 6, h: 4, minW: 6, minH: 4 },
-  { i: 'web-scraper', x: 6, y: 24, w: 3, h: 4, minW: 3, minH: 3 },
-  { i: 'port-killer', x: 9, y: 24, w: 3, h: 4, minW: 3, minH: 3 },
+  // Row 6: Content feeds
+  { i: 'hacker-news', x: 0, y: 24, w: 4, h: 4, minW: 3, minH: 4 },
+  { i: 'custom-rss', x: 4, y: 24, w: 4, h: 4, minW: 4, minH: 4 },
+  { i: 'web-scraper', x: 8, y: 24, w: 4, h: 4, minW: 3, minH: 3 },
 
-  // Row 7: Markdown Editor + Quick Links
-  { i: 'markdown-editor', x: 0, y: 28, w: 9, h: 4, minW: 6, minH: 3 },
+  // Row 7: Network + quick access
+  { i: 'network-outage', x: 0, y: 28, w: 6, h: 4, minW: 6, minH: 4 },
+  { i: 'port-killer', x: 6, y: 28, w: 3, h: 4, minW: 3, minH: 3 },
   { i: 'quick-links', x: 9, y: 28, w: 3, h: 4, minW: 3, minH: 3 },
 
-  // Row 8: Security - Firewall Monitor
-  { i: 'firewall-monitor', x: 0, y: 32, w: 6, h: 6, minW: 6, minH: 6 },
+  // Row 8: Markdown editor (full width for editing room)
+  { i: 'markdown-editor', x: 0, y: 32, w: 12, h: 4, minW: 6, minH: 3 },
+
+  // Row 9: Firewall monitor (rule list needs room)
+  { i: 'firewall-monitor', x: 0, y: 36, w: 12, h: 6, minW: 6, minH: 6 },
 ];
 
 const defaultEnabledWidgets = {
@@ -209,6 +214,25 @@ function migrateLegacyMetrics() {
   }
 }
 
+// Bump whenever defaultLayout's positions/sizes change meaningfully.
+// Stale saved layouts (from an older defaultLayout revision) are discarded
+// so users get the fixed layout automatically, without having to know to
+// press "Reset".
+const LAYOUT_VERSION = 3;
+
+function invalidateStaleLayout() {
+  try {
+    const storedVersion = localStorage.getItem('dashboard-layout-version');
+    if (storedVersion !== String(LAYOUT_VERSION)) {
+      localStorage.removeItem('dashboard-layout');
+      localStorage.setItem('dashboard-layout-version', String(LAYOUT_VERSION));
+    }
+  } catch {
+    // Silent fallback — saved layout (if any) is kept
+  }
+}
+
+invalidateStaleLayout();
 migrateLegacyMetrics();
 
 // Check widget health (service availability, config status)
