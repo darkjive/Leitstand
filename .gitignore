@@ -39,3 +39,4 @@ dashboard-smoke.png
 # Vendored agent skill files — local tooling, not part of the project
 .agents/
 .claude/
+build/

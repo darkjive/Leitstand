@@ -118,12 +118,11 @@ export function PortKiller() {
                     <span className="text-xs text-gray-500 font-mono">{portInfo.protocol}</span>
                     <span className="text-xs text-gray-600 font-mono">PID {portInfo.pid}</span>
                   </div>
-                  <div
-                    className="text-sm text-gray-400 font-mono truncate"
-                    title={portInfo.command}
-                  >
+                  <div className="text-sm text-gray-400 font-mono" title={portInfo.command}>
                     <span className="text-cyber-cyan">{portInfo.processName}</span>
-                    <span className="text-gray-600 ml-2">{portInfo.command}</span>
+                    <div className="text-gray-600 break-all whitespace-normal mt-0.5">
+                      {portInfo.command}
+                    </div>
                   </div>
                 </div>
                 <button
