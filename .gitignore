@@ -40,3 +40,6 @@ dashboard-smoke.png
 .agents/
 .claude/
 build/
+AGENTS.md
+CLAUDE.md
+GEMINI.md
