@@ -1,4 +1,6 @@
-# 🚀 Homelab Control Center
+# 🚀 Leitstand
+
+**Homelab Control Center** — futuristisches Dashboard mit Live-Systemmonitoring und Cyberpunk-Optik.
 
 <p align="center">
   <img src="https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
