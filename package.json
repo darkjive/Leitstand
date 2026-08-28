@@ -1,5 +1,5 @@
 {
-  "name": "homelab-dashboard",
+  "name": "leitstand",
   "private": true,
   "version": "1.0.0",
   "license": "MIT",
@@ -7,7 +7,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/darkjive/homelab-dashboard.git"
+    "url": "git+https://github.com/darkjive/Leitstand.git"
   },
   "description": "Futuristic homelab control center with real-time system monitoring, AI agent terminals, and cyberpunk aesthetics",
   "main": "electron/main.cjs",
