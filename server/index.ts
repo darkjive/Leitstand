@@ -961,6 +961,16 @@ if (existsSync(distDir)) {
   app.use(express.static(distDir));
 }
 
+// Refuse to start rather than merely warn: a non-loopback bind without a
+// token would serve every destructive endpoint (git push, kill processes,
+// npm scripts) to the whole LAN unauthenticated.
+if (!isLoopbackBind && !DASHBOARD_TOKEN) {
+  console.error(
+    '[SECURITY] Refusing to start: BIND_HOST is non-loopback but DASHBOARD_TOKEN is not set. Set DASHBOARD_TOKEN in .env or bind to loopback.'
+  );
+  process.exit(1);
+}
+
 server.listen(PORT, HOST, () => {
   console.log(`\n🚀 Homelab Dashboard API running on http://${HOST}:${PORT}`);
   console.log(`📊 System Metrics (HTTP): http://${HOST}:${PORT}/api/metrics`);
@@ -973,12 +983,7 @@ server.listen(PORT, HOST, () => {
     console.log(`\n🔒 Listening on loopback only. Set BIND_HOST=0.0.0.0 to expose on LAN.\n`);
   } else {
     console.log(
-      `\n⚠️  WARNING: listening on ${HOST} — endpoints have NO AUTH. Anyone reachable can run git push, kill processes, run npm scripts, etc.\n`
-    );
-  }
-  if (!isLoopbackBind && !DASHBOARD_TOKEN) {
-    console.warn(
-      '[SECURITY] Non-loopback bind without DASHBOARD_TOKEN — destructive endpoints are UNAUTHENTICATED. Set DASHBOARD_TOKEN in .env.'
+      `\n⚠️  WARNING: listening on ${HOST} — endpoints have NO AUTH other than DASHBOARD_TOKEN. Anyone with the token can run git push, kill processes, run npm scripts, etc.\n`
     );
   }
 });
