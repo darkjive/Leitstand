@@ -289,7 +289,7 @@ No test framework or CI is set up — `pnpm build` + `pnpm lint` are the verific
 
 ## 🎨 Design Inspiration
 
-Heavily inspired by **[pxlngn.net](https://pxlngn.net)**:
+Heavily inspired by **[pxlngn.net](https://pxlngn-net.vercel.app)**:
 
 - Cyan/Orange gradient palette (`rgb(0, 195, 255)` + `rgb(255, 135, 0)`)
 - JetBrains Mono typography
@@ -304,7 +304,7 @@ MIT — see [LICENSE](LICENSE).
 ## 🙏 Acknowledgments
 
 - **[Homepage by gethomepage](https://github.com/gethomepage/homepage)** - Dashboard structure inspiration
-- **[pxlngn.net](https://pxlngn.net)** - Design aesthetics and color palette
+- **[pxlngn.net](https://pxlngn-net.vercel.app)** - Design aesthetics and color palette
 - **[wttr.in](https://wttr.in)** - Weather data API
 - **[systeminformation](https://github.com/sebhildebrandt/systeminformation)** - System metrics library
 
