@@ -9,7 +9,7 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const BIN = path.join(ROOT, 'node_modules', '.bin');
 const SERVER_PORT = process.env.PORT || 3010;
-const VITE_PORT = 5173;
+const VITE_PORT = 5180;
 const isDev = !app.isPackaged && process.env.NODE_ENV !== 'production';
 
 let serverProc = null;

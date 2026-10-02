@@ -7,7 +7,7 @@ import type { DevPortInfo } from '../../shared/types.js';
 const execFileAsync = promisify(execFile);
 
 // Common dev ports to always check
-const DEV_PORTS = [3000, 3010, 4000, 4173, 5000, 5173, 5432, 8000, 8080, 8888, 9000, 27017];
+const DEV_PORTS = [3000, 3010, 4000, 4173, 5000, 5173, 5180, 5432, 8000, 8080, 8888, 9000, 27017];
 
 // True if `lsof` is on PATH. Widget degrades to empty list if absent.
 export async function getPortKillerStatus(): Promise<{ available: boolean; error?: string }> {

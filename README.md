@@ -90,11 +90,11 @@ git clone https://github.com/darkjive/homelab-dashboard.git
 cd homelab-dashboard
 pnpm install
 
-# Start frontend (http://localhost:5173) + backend (http://localhost:3010)
+# Start frontend (http://localhost:5180) + backend (http://localhost:3010)
 pnpm dev:all
 
 # Or start separately:
-pnpm dev        # Frontend only (Vite) - http://localhost:5173
+pnpm dev        # Frontend only (Vite) - http://localhost:5180
 pnpm dev:server # Backend only (Express) - http://localhost:3010
 pnpm dev:ollama # Local Ollama server (optional, for ChatBot) - http://localhost:11434
 ```
@@ -118,7 +118,7 @@ cp .env.example .env
 | `PORT`            | `3010`                   | Backend port (also picked up by the Vite proxy + Electron)                                                      |
 | `DASHBOARD_TOKEN` | _(empty)_                | Shared token for destructive endpoints. Empty = open (loopback default). **Required** when `BIND_HOST=0.0.0.0`. |
 
-> Frontend dev is `5173`, Vite preview is `4173`.
+> Frontend dev is `5180`, Vite preview is `4173`.
 
 ### ⚠️ Security defaults
 
