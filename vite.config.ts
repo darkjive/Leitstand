@@ -8,6 +8,9 @@ const backendPort = process.env.PORT || '3010';
 export default defineConfig({
   plugins: [react()],
   server: {
+    // Eigener Port: 5173 kollidiert mit anderen Vite-Projekten (z. B. Zeitgeber-PWA/Service Worker)
+    port: 5180,
+    strictPort: true,
     proxy: {
       // Proxy API calls to backend server
       '/api': {

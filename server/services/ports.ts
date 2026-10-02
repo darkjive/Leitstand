@@ -102,6 +102,7 @@ function getServiceName(port: number): string {
     3010: 'Backend API',
     3306: 'MySQL',
     5173: 'Vite Dev Server',
+    5180: 'Leitstand Vite Dev Server',
     5432: 'PostgreSQL',
     6379: 'Redis',
     8080: 'HTTP Alt',
