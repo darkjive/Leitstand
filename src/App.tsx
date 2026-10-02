@@ -419,9 +419,9 @@ function App() {
               <img src="/favicon.svg" alt="" className="w-8 h-8" />
               <div>
                 <h1 className="text-2xl font-bold cyber-glow">
-                  NXSCTRL.LAB<span className="blink-cursor"></span>
+                  Leitstand<span className="blink-cursor"></span>
                 </h1>
-                <p className="text-xs text-gray-400">Nexus Control Laboratory</p>
+                <p className="text-xs text-gray-400">Homelab Control Center</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -571,7 +571,7 @@ function App() {
 
         <footer className="mt-12 py-6 border-t border-cyber-border text-center">
           <p className="text-sm text-gray-500">
-            NXSCTRL.LAB // Powered by React 19 + Vite 7 + Tailwind 4
+            Leitstand // Powered by React 19 + Vite 7 + Tailwind 4
           </p>
           <p className="text-xs text-gray-600 mt-2">
             Built with <span style={{ color: 'var(--color-cyber-cyan)' }}>Cyan</span> and{' '}
