@@ -26,7 +26,7 @@ import { FirewallMonitor } from './components/FirewallMonitor';
 import { SettingsPanel } from './components/SettingsPanel';
 import { useSetting } from './lib/settings';
 import { Toaster } from './components/Toaster';
-import { Boxes, RotateCcw, Eye, EyeOff, Save, Settings } from 'lucide-react';
+import { RotateCcw, Eye, EyeOff, Save, Settings } from 'lucide-react';
 import 'react-grid-layout/css/styles.css';
 import { apiFetch } from './lib/api';
 
@@ -416,7 +416,7 @@ function App() {
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Boxes className="w-8 h-8" style={{ color: 'var(--color-cyber-cyan)' }} />
+              <img src="/favicon.svg" alt="" className="w-8 h-8" />
               <div>
                 <h1 className="text-2xl font-bold cyber-glow">
                   NXSCTRL.LAB<span className="blink-cursor"></span>
