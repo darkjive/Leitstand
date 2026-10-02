@@ -62,6 +62,7 @@ async function bootstrap() {
     height: 1000,
     backgroundColor: '#0a0a0f',
     title: 'Homelab Dashboard',
+    icon: path.join(__dirname, 'icon.png'),
     autoHideMenuBar: true,
     webPreferences: { contextIsolation: true, nodeIntegration: false },
   });
