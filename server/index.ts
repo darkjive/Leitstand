@@ -972,7 +972,7 @@ if (!isLoopbackBind && !DASHBOARD_TOKEN) {
 }
 
 server.listen(PORT, HOST, () => {
-  console.log(`\n🚀 Homelab Dashboard API running on http://${HOST}:${PORT}`);
+  console.log(`\n🚀 Leitstand API running on http://${HOST}:${PORT}`);
   console.log(`📊 System Metrics (HTTP): http://${HOST}:${PORT}/api/metrics`);
   console.log(`📊 System Metrics (WebSocket): ws://${HOST}:${PORT}/ws`);
   console.log(`🌤️  Weather: http://${HOST}:${PORT}/api/weather?location=Munich`);
