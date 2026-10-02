@@ -5,7 +5,7 @@ export async function getWeather(location: string): Promise<WeatherData> {
     const url = `https://wttr.in/${encodeURIComponent(location)}?format=j1`;
     const response = await fetch(url, {
       signal: AbortSignal.timeout(15000),
-      headers: { 'User-Agent': 'homelab-dashboard' },
+      headers: { 'User-Agent': 'leitstand' },
     });
     if (!response.ok) {
       throw new Error(`wttr.in responded with ${response.status}`);

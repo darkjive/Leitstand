@@ -86,8 +86,8 @@
 ### Installation
 
 ```bash
-git clone https://github.com/darkjive/homelab-dashboard.git
-cd homelab-dashboard
+git clone https://github.com/darkjive/Leitstand.git
+cd Leitstand
 pnpm install
 
 # Start frontend (http://localhost:5180) + backend (http://localhost:3010)
@@ -184,7 +184,7 @@ Tailwind 4 is configured via CSS. Edit the `@theme {}` block in `src/index.css`:
 ## 📁 Project Structure
 
 ```
-homelab-dashboard/
+Leitstand/
 ├── shared/
 │   └── types.ts                  # Wire types shared by server + frontend
 ├── server/
