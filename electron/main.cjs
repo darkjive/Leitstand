@@ -49,6 +49,8 @@ function waitFor(url, { timeout = 30000 } = {}) {
   });
 }
 
+let ready = false;
+
 async function bootstrap() {
   serverProc = spawnBin('tsx', ['server/index.ts']);
   if (isDev) {
@@ -56,7 +58,11 @@ async function bootstrap() {
     await waitFor(`http://localhost:${VITE_PORT}/`);
   }
   await waitFor(`http://localhost:${SERVER_PORT}/health`);
+  ready = true;
+  await createWindow();
+}
 
+async function createWindow() {
   win = new BrowserWindow({
     width: 1600,
     height: 1000,
@@ -67,17 +73,27 @@ async function bootstrap() {
     webPreferences: { contextIsolation: true, nodeIntegration: false },
   });
 
-  const target = isDev ? `http://localhost:${VITE_PORT}/` : `http://localhost:${SERVER_PORT}/`;
-  await win.loadURL(target);
-
-  // Open external links in the system browser, keep internal navigations in-app.
-  win.webContents.setWindowOpenHandler(({ url }) => {
-    if (/^https?:/.test(url)) {
-      shell.openExternal(url);
-      return { action: 'deny' };
-    }
-    return { action: 'allow' };
+  win.on('closed', () => {
+    win = null;
   });
+
+  const target = isDev ? `http://localhost:${VITE_PORT}/` : `http://localhost:${SERVER_PORT}/`;
+  const targetOrigin = new URL(target).origin;
+
+  // Handlers go in BEFORE loadURL — otherwise early window.open/navigation slips through.
+  // External links open in the system browser; the window never leaves the app origin.
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (/^https?:/.test(url)) shell.openExternal(url);
+    return { action: 'deny' };
+  });
+  win.webContents.on('will-navigate', (event, url) => {
+    if (new URL(url).origin !== targetOrigin) {
+      event.preventDefault();
+      if (/^https?:/.test(url)) shell.openExternal(url);
+    }
+  });
+
+  await win.loadURL(target);
 }
 
 function killChild(child) {
@@ -90,17 +106,22 @@ function killChild(child) {
   }
 }
 
-app.whenReady().then(bootstrap).catch(err => {
-  console.error('[desktop] failed to start:', err);
-  app.quit();
-});
+app
+  .whenReady()
+  .then(bootstrap)
+  .catch(err => {
+    console.error('[desktop] failed to start:', err);
+    app.quit();
+  });
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
 app.on('activate', () => {
-  if (win === null) bootstrap();
+  // macOS dock click: reopen the window only — the server is still running.
+  // (Re-running bootstrap() would spawn a second server/vite.)
+  if (win === null && ready) createWindow();
 });
 
 app.on('before-quit', () => {
