@@ -447,7 +447,7 @@ function App() {
                 <h1 className="text-2xl font-bold">
                   Leitstand<span className="blink-cursor"></span>
                 </h1>
-                <p className="text-xs text-gray-400">Homelab Control Center</p>
+                <p className="text-xs text-gray-400">Dev Control</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
