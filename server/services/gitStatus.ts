@@ -1,10 +1,42 @@
 import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
-import { existsSync, readdirSync, statSync } from 'fs';
+import { readdir, stat, access } from 'fs/promises';
 import { join, basename } from 'path';
 import type { GitStatus, GitCommit, RepoSummary, BulkResultItem } from '../../shared/types.js';
 
 const execAsync = promisify(exec);
+
+// Network operations must never block on a credential prompt (no TTY here) or hang
+// forever on a dead remote.
+const NET_OPTS = {
+  timeout: 120_000,
+  env: { ...process.env, GIT_TERMINAL_PROMPT: '0', GIT_ASKPASS: 'echo' },
+};
+
+const exists = (p: string) =>
+  access(p).then(
+    () => true,
+    () => false
+  );
+
+/** Run `fn` over `items` with at most `limit` in flight (bulk ops must not fork 200 gits at once). */
+async function mapLimit<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let cursor = 0;
+  const worker = async () => {
+    while (cursor < items.length) {
+      const idx = cursor++;
+      results[idx] = await fn(items[idx]);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return results;
+}
+const BULK_CONCURRENCY = 4;
 
 const SKIP_DIRS = new Set([
   'node_modules',
@@ -32,8 +64,12 @@ const SKIP_DIRS = new Set([
 ]);
 
 export async function getGitStatus(repoPath: string = process.cwd()): Promise<GitStatus> {
-  // Check if it's a git repo
-  if (!existsSync(join(repoPath, '.git'))) {
+  // Check if it's a git repo (also true for subfolders of one — a bare .git lookup is not)
+  const isRepo = await execAsync('git rev-parse --is-inside-work-tree', { cwd: repoPath }).then(
+    r => r.stdout.trim() === 'true',
+    () => false
+  );
+  if (!isRepo) {
     return {
       isRepo: false,
       branch: '',
@@ -108,23 +144,27 @@ export async function getGitStatus(repoPath: string = process.cwd()): Promise<Gi
 
       if (status === '??') {
         untracked.push(file);
-      } else if (status[0] !== ' ' && status[0] !== '?') {
-        staged.push(file);
-      } else if (status[1] !== ' ' && status[1] !== '?') {
-        unstaged.push(file);
+      } else {
+        // "MM" = staged AND modified again in the work tree → belongs in both lists
+        if (status[0] !== ' ' && status[0] !== '?') staged.push(file);
+        if (status[1] !== ' ' && status[1] !== '?') unstaged.push(file);
       }
     }
 
     // Get recent commits (last 5)
-    const { stdout: logOutput } = await execAsync('git log -5 --pretty=format:"%H|%an|%ar|%s"', {
-      cwd: repoPath,
-    });
+    const { stdout: logOutput } = await execAsync(
+      "git log -5 --pretty=format:'%H%x1f%an%x1f%ar%x1f%s'",
+      {
+        cwd: repoPath,
+      }
+    );
 
     const recentCommits: GitCommit[] = logOutput
       .split('\n')
       .filter(line => line.trim())
       .map(line => {
-        const [hash, author, date, message] = line.split('|');
+        // \x1f separator: commit subjects may contain '|'
+        const [hash, author, date, message] = line.split('\x1f');
         return {
           hash: hash.substring(0, 7),
           author,
@@ -156,7 +196,7 @@ export async function gitPull(
   repoPath: string = process.cwd()
 ): Promise<{ success: boolean; message: string }> {
   try {
-    const { stdout, stderr } = await execAsync('git pull', { cwd: repoPath });
+    const { stdout, stderr } = await execAsync('git pull', { cwd: repoPath, ...NET_OPTS });
     return {
       success: true,
       message: stdout || stderr || 'Pulled successfully',
@@ -173,7 +213,7 @@ export async function gitPush(
   repoPath: string = process.cwd()
 ): Promise<{ success: boolean; message: string }> {
   try {
-    const { stdout, stderr } = await execAsync('git push', { cwd: repoPath });
+    const { stdout, stderr } = await execAsync('git push', { cwd: repoPath, ...NET_OPTS });
     return {
       success: true,
       message: stdout || stderr || 'Pushed successfully',
@@ -195,21 +235,17 @@ export async function gitPush(
  * Stops descending into a directory once it is identified as a git repo.
  * Skips common heavy/irrelevant folders.
  */
-function findGitRepos(dir: string, maxDepth: number, found: string[]): void {
+async function findGitRepos(dir: string, maxDepth: number, found: string[]): Promise<void> {
   if (maxDepth < 0) return;
 
-  try {
-    if (existsSync(join(dir, '.git'))) {
-      found.push(dir);
-      return; // do not descend into a repo's own subfolders
-    }
-  } catch {
-    return;
+  if (await exists(join(dir, '.git'))) {
+    found.push(dir);
+    return; // do not descend into a repo's own subfolders
   }
 
   let entries: string[];
   try {
-    entries = readdirSync(dir);
+    entries = await readdir(dir);
   } catch {
     return;
   }
@@ -218,8 +254,8 @@ function findGitRepos(dir: string, maxDepth: number, found: string[]): void {
     if (entry.startsWith('.') || SKIP_DIRS.has(entry)) continue;
     const full = join(dir, entry);
     try {
-      if (statSync(full).isDirectory()) {
-        findGitRepos(full, maxDepth - 1, found);
+      if ((await stat(full)).isDirectory()) {
+        await findGitRepos(full, maxDepth - 1, found);
       }
     } catch {
       continue;
@@ -346,15 +382,14 @@ export async function getRepoSummary(repoPath: string, root: string): Promise<Re
 export async function scanGitRepos(roots: string[], maxDepth = 3): Promise<RepoSummary[]> {
   const repoPaths: string[] = [];
   for (const root of roots) {
-    if (!existsSync(root)) continue;
     let st;
     try {
-      st = statSync(root);
+      st = await stat(root);
     } catch {
       continue;
     }
     if (!st.isDirectory()) continue;
-    findGitRepos(root, maxDepth, repoPaths);
+    await findGitRepos(root, maxDepth, repoPaths);
   }
 
   // Deduplicate (same path reached via multiple roots)
@@ -401,7 +436,10 @@ export async function scanGitRepos(roots: string[], maxDepth = 3): Promise<RepoS
 
 export async function gitFetch(repoPath: string): Promise<{ success: boolean; message: string }> {
   try {
-    const { stdout, stderr } = await execAsync('git fetch --all --prune', { cwd: repoPath });
+    const { stdout, stderr } = await execAsync('git fetch --all --prune', {
+      cwd: repoPath,
+      ...NET_OPTS,
+    });
     return { success: true, message: stdout || stderr || 'Fetched' };
   } catch (error) {
     return {
@@ -416,45 +454,33 @@ function nameOf(path: string): string {
 }
 
 export async function bulkPull(paths: string[]): Promise<BulkResultItem[]> {
-  const results = await Promise.all(
-    paths.map(async p => {
-      const r = await gitPull(p);
-      return { path: p, name: nameOf(p), success: r.success, message: r.message };
-    })
-  );
-  return results;
+  return mapLimit(paths, BULK_CONCURRENCY, async p => {
+    const r = await gitPull(p);
+    return { path: p, name: nameOf(p), success: r.success, message: r.message };
+  });
 }
 
 export async function bulkPush(paths: string[]): Promise<BulkResultItem[]> {
-  const results = await Promise.all(
-    paths.map(async p => {
-      const r = await gitPush(p);
-      return { path: p, name: nameOf(p), success: r.success, message: r.message };
-    })
-  );
-  return results;
+  return mapLimit(paths, BULK_CONCURRENCY, async p => {
+    const r = await gitPush(p);
+    return { path: p, name: nameOf(p), success: r.success, message: r.message };
+  });
 }
 
 export async function bulkCommit(
   items: { path: string; message: string }[]
 ): Promise<BulkResultItem[]> {
-  const results = await Promise.all(
-    items.map(async it => {
-      const r = await gitCommit(it.message, it.path);
-      return { path: it.path, name: nameOf(it.path), success: r.success, message: r.message };
-    })
-  );
-  return results;
+  return mapLimit(items, BULK_CONCURRENCY, async it => {
+    const r = await gitCommit(it.message, it.path);
+    return { path: it.path, name: nameOf(it.path), success: r.success, message: r.message };
+  });
 }
 
 export async function bulkFetch(paths: string[]): Promise<BulkResultItem[]> {
-  const results = await Promise.all(
-    paths.map(async p => {
-      const r = await gitFetch(p);
-      return { path: p, name: nameOf(p), success: r.success, message: r.message };
-    })
-  );
-  return results;
+  return mapLimit(paths, BULK_CONCURRENCY, async p => {
+    const r = await gitFetch(p);
+    return { path: p, name: nameOf(p), success: r.success, message: r.message };
+  });
 }
 
 export async function gitCommit(
