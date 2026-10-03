@@ -32,9 +32,11 @@ export function setDashboardToken(token: string): void {
 
 export function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const token = getDashboardToken();
-  if (!token) return fetch(path, init);
   const headers = new Headers(init.headers || {});
-  headers.set('X-Dashboard-Token', token);
+  // Custom header → browsers must preflight, so foreign sites cannot trigger
+  // state-changing requests (server enforces it for non-GET, see server/index.ts).
+  headers.set('X-Leitstand-Request', '1');
+  if (token) headers.set('X-Dashboard-Token', token);
   return fetch(path, { ...init, headers });
 }
 

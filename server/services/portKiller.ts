@@ -54,6 +54,9 @@ export async function getActiveDevPorts(): Promise<DevPortInfo[]> {
       // Only include dev-relevant ports
       if (!DEV_PORTS.includes(port) && port < 3000) continue;
 
+      // lsof lists a dual-stack listener twice (IPv4 + IPv6)
+      if (ports.some(p => p.port === port && p.pid === pid)) continue;
+
       ports.push({
         port,
         pid,
@@ -99,7 +102,7 @@ export async function killProcess(pid: number): Promise<{ success: boolean; mess
     process.kill(pid, 'SIGTERM');
 
     // Wait a bit to check if process is still alive
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
     try {
       process.kill(pid, 0); // signal 0 = liveness probe, throws ESRCH when gone
@@ -126,6 +129,10 @@ export async function killPortProcess(
 
     if (!portInfo) {
       return { success: false, message: `No process found on port ${port}` };
+    }
+    // Leitstand's own backend (and its parent shell/electron) is not a kill target
+    if (portInfo.pid === process.pid || portInfo.pid === process.ppid) {
+      return { success: false, message: 'Refusing to kill the Leitstand server itself' };
     }
 
     return await killProcess(portInfo.pid);

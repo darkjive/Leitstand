@@ -3,8 +3,28 @@ import { readFile, access } from 'fs/promises';
 import { join } from 'path';
 import type { PackageScripts, ScriptOutput } from '../../shared/types.js';
 
-// Store running processes
+// Store running processes. Finished entries stay (so the UI can still read the
+// final output) and are dropped after FINISHED_TTL_MS.
 const runningProcesses = new Map<string, { process: ChildProcess; output: string[] }>();
+const FINISHED_TTL_MS = 5 * 60 * 1000;
+
+/**
+ * Signal the whole process group. The script runs detached (own group), so this
+ * also reaches grandchildren like vite/tsx that `npm run` spawns — killing only
+ * the npm process would leave them running.
+ */
+function killGroup(child: ChildProcess, signal: NodeJS.Signals): void {
+  if (child.pid === undefined) return;
+  try {
+    process.kill(-child.pid, signal);
+  } catch {
+    try {
+      child.kill(signal); // group already gone or not a leader
+    } catch {
+      /* already exited */
+    }
+  }
+}
 
 export async function getPackageScripts(repoPath: string = process.cwd()): Promise<PackageScripts> {
   try {
@@ -57,7 +77,7 @@ export function runScript(
   for (const [id, proc] of runningProcesses.entries()) {
     if (id.startsWith(`${repoPath}:${scriptName}:`)) {
       try {
-        proc.process.kill();
+        killGroup(proc.process, 'SIGTERM');
       } catch (error) {
         console.error('[NPM Scripts] Failed to kill existing process:', error);
       } finally {
@@ -84,6 +104,7 @@ export function runScript(
   const childProcess = spawn(command, args, {
     cwd: repoPath,
     shell: false,
+    detached: true, // own process group → stoppable as a unit, see killGroup()
     env: { ...process.env, FORCE_COLOR: '0' },
   });
 
@@ -111,8 +132,13 @@ export function runScript(
     }
   });
 
-  childProcess.on('close', (code: number) => {
-    processData.output.push(`\n[Process exited with code ${code}]`);
+  childProcess.on('close', (code: number | null, signal: NodeJS.Signals | null) => {
+    processData.output.push(
+      signal ? `\n[Process terminated by ${signal}]` : `\n[Process exited with code ${code}]`
+    );
+    setTimeout(() => {
+      if (runningProcesses.get(processId) === processData) runningProcesses.delete(processId);
+    }, FINISHED_TTL_MS).unref();
   });
 
   childProcess.on('error', (error: Error) => {
@@ -133,7 +159,8 @@ export function getScriptOutput(processId: string): ScriptOutput {
     };
   }
 
-  const isRunning = processData.process.exitCode === null;
+  const isRunning =
+    processData.process.exitCode === null && processData.process.signalCode === null;
 
   return {
     output: processData.output.join(''),
@@ -150,16 +177,16 @@ export function stopScript(processId: string): { success: boolean; message: stri
   }
 
   try {
-    processData.process.kill('SIGTERM');
+    killGroup(processData.process, 'SIGTERM');
 
     // Force kill after 2 seconds if still running
     setTimeout(() => {
-      if (processData.process.exitCode === null) {
-        processData.process.kill('SIGKILL');
+      if (processData.process.exitCode === null && processData.process.signalCode === null) {
+        killGroup(processData.process, 'SIGKILL');
       }
-    }, 2000);
+    }, 2000).unref();
 
-    runningProcesses.delete(processId);
+    // Entry stays until the 'close' handler's TTL — the final output remains readable
     return { success: true, message: 'Process stopped' };
   } catch (error) {
     return {
@@ -170,5 +197,12 @@ export function stopScript(processId: string): { success: boolean; message: stri
 }
 
 export function getRunningProcesses(): string[] {
-  return Array.from(runningProcesses.keys());
+  return Array.from(runningProcesses.entries())
+    .filter(([, p]) => p.process.exitCode === null && p.process.signalCode === null)
+    .map(([id]) => id);
+}
+
+/** Server shutdown: take all script process groups down with us. */
+export function stopAllScripts(): void {
+  for (const { process: child } of runningProcesses.values()) killGroup(child, 'SIGTERM');
 }

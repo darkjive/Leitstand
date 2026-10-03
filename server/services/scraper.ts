@@ -93,6 +93,33 @@ export async function scrapeUrl(options: ScrapeOptions): Promise<ScrapeResult> {
         'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     });
 
+    // SSRF guard on EVERY request the page makes — redirect hops, subresources,
+    // iframes and fetch() from page scripts, not just the top-level navigation.
+    // Verdicts are cached per host to keep page loads fast; a non-http(s) scheme
+    // (file:, ftp:, …) is refused outright. data:/blob:/about: carry no network.
+    const hostVerdicts = new Map<string, Promise<boolean>>();
+    await page.route('**/*', async route => {
+      const reqUrl = route.request().url();
+      let parsed: URL;
+      try {
+        parsed = new URL(reqUrl);
+      } catch {
+        return route.abort('blockedbyclient');
+      }
+      if (['data:', 'blob:', 'about:'].includes(parsed.protocol)) return route.continue();
+      if (!['http:', 'https:'].includes(parsed.protocol)) return route.abort('blockedbyclient');
+      let verdict = hostVerdicts.get(parsed.hostname);
+      if (!verdict) {
+        verdict = isPrivateHost(parsed.hostname);
+        hostVerdicts.set(parsed.hostname, verdict);
+      }
+      if (await verdict) {
+        console.warn(`[Scraper] Blocked request to private host: ${reqUrl}`);
+        return route.abort('blockedbyclient');
+      }
+      return route.continue();
+    });
+
     const visited = new Set<string>();
     const toVisit: Array<{ url: string; level: number }> = [{ url, level: 0 }];
     let allContent = '';

@@ -1,6 +1,6 @@
 import { spawn, ChildProcess } from 'child_process';
-import { stat } from 'fs/promises';
-import { join, resolve } from 'path';
+import { stat, realpath } from 'fs/promises';
+import { join, resolve, basename } from 'path';
 import { homedir } from 'os';
 import type { LogFile, LogLine, LogLevel, LogSuggestion } from '../../shared/types.js';
 
@@ -24,11 +24,11 @@ const colors = [
 let colorIndex = 0;
 
 export function detectLogLevel(line: string): LogLevel {
-  const upper = line.toUpperCase();
-  if (upper.includes('ERROR') || upper.includes('ERR') || upper.includes('FATAL')) return 'ERROR';
-  if (upper.includes('WARN') || upper.includes('WARNING')) return 'WARN';
-  if (upper.includes('INFO')) return 'INFO';
-  if (upper.includes('DEBUG') || upper.includes('TRACE')) return 'DEBUG';
+  // Whole words only — substring matching flags INTERRUPT/STDERR as errors
+  if (/\b(ERROR|ERR|FATAL)\b/i.test(line)) return 'ERROR';
+  if (/\bWARN(ING)?\b/i.test(line)) return 'WARN';
+  if (/\bINFO\b/i.test(line)) return 'INFO';
+  if (/\b(DEBUG|TRACE)\b/i.test(line)) return 'DEBUG';
   return 'UNKNOWN';
 }
 
@@ -40,14 +40,21 @@ const BLOCKED_TAIL_PREFIXES = ['.ssh', '.gnupg', '.aws', '.kube', '.docker'].map
   join(homedir(), d)
 );
 
-function assertTailablePath(userPath: string): string {
-  const resolved = resolve(userPath);
-  const allowed = ALLOWED_TAIL_ROOTS.some(root => resolved.startsWith(root + '/'));
+// Resolves symlinks first: a link under ~/Dev pointing at ~/.ssh/id_rsa must be
+// judged by its target. Throws ENOENT for missing files (callers treat that as failure).
+async function assertTailablePath(userPath: string): Promise<string> {
+  const resolved = await realpath(resolve(userPath));
+  const roots = await Promise.all(ALLOWED_TAIL_ROOTS.map(r => realpath(r).catch(() => r)));
+  const allowed = roots.some(root => resolved.startsWith(root + '/'));
   if (!allowed) {
     throw new Error(`Access denied — tailing is limited to ${ALLOWED_TAIL_ROOTS.join(', ')}`);
   }
   if (BLOCKED_TAIL_PREFIXES.some(p => resolved === p || resolved.startsWith(p + '/'))) {
     throw new Error('Access denied — path contains credentials');
+  }
+  // Env files anywhere (e.g. a project's .env holding DASHBOARD_TOKEN)
+  if (/^\.env(\.|$)/.test(basename(resolved))) {
+    throw new Error('Access denied — env files are not tailable');
   }
   // Block dotfiles/dotdirs directly under $HOME (credentials, shell history, tokens).
   // Logs under /var/log and the project dir stay allowed — only $HOME root is restrictive.
@@ -63,7 +70,7 @@ function assertTailablePath(userPath: string): string {
 
 export async function startTailing(file: LogFile): Promise<{ success: boolean; message: string }> {
   try {
-    const resolvedPath = assertTailablePath(file.path);
+    const resolvedPath = await assertTailablePath(file.path);
 
     const st = await stat(resolvedPath);
     if (!st.isFile()) {
@@ -88,11 +95,12 @@ export async function startTailing(file: LogFile): Promise<{ success: boolean; m
 
     tailProcesses.set(file.id, processData);
 
+    // A chunk can end mid-line — keep the tail fragment for the next chunk
+    let partial = '';
     tailProcess.stdout.on('data', (data: Buffer) => {
-      const lines = data
-        .toString()
-        .split('\n')
-        .filter(line => line.trim());
+      const chunks = (partial + data.toString()).split('\n');
+      partial = chunks.pop() ?? '';
+      const lines = chunks.filter(line => line.trim());
 
       for (const line of lines) {
         const logLine: LogLine = {
@@ -119,12 +127,13 @@ export async function startTailing(file: LogFile): Promise<{ success: boolean; m
 
     tailProcess.on('close', (code: number) => {
       console.log(`[LogAggregator] Tail process for ${file.name} exited with code ${code}`);
-      tailProcesses.delete(file.id);
+      // Only drop our own entry — after a restart the map holds the NEW process
+      if (tailProcesses.get(file.id) === processData) tailProcesses.delete(file.id);
     });
 
     tailProcess.on('error', (error: Error) => {
       console.error(`[LogAggregator] Tail process error for ${file.name}:`, error);
-      tailProcesses.delete(file.id);
+      if (tailProcesses.get(file.id) === processData) tailProcesses.delete(file.id);
     });
 
     return { success: true, message: `Started tailing ${file.name}` };
@@ -211,8 +220,8 @@ export async function getCommonLogSuggestions(
   const checks = await Promise.all(
     candidates.map(async s => {
       try {
-        assertTailablePath(s.path);
-        return (await stat(s.path)).isFile() ? s : null;
+        const real = await assertTailablePath(s.path);
+        return (await stat(real)).isFile() ? s : null;
       } catch {
         return null;
       }

@@ -36,15 +36,18 @@ export function isPrivateOrLoopbackHost(hostname: string): boolean {
     if (a === 100 && b >= 64 && b <= 127) return true; // 100.64.0.0/10 (CGNAT)
   }
 
-  // IPv6 private/link-local (only simple forms — does not normalize)
-  if (host.startsWith('fc') || host.startsWith('fd')) return true; // fc00::/7 ULA
-  if (
-    host.startsWith('fe80:') ||
-    host.startsWith('fe90:') ||
-    host.startsWith('fea0:') ||
-    host.startsWith('feb0:')
-  )
-    return true; // fe80::/10 link-local
+  // IPv6 private/link-local (only simple forms — does not normalize). Gated on a
+  // real IPv6 literal: hostnames like fcbayern.com or fdroid.org also start with "fc"/"fd".
+  if (isIP(host) === 6) {
+    if (host.startsWith('fc') || host.startsWith('fd')) return true; // fc00::/7 ULA
+    if (
+      host.startsWith('fe80:') ||
+      host.startsWith('fe90:') ||
+      host.startsWith('fea0:') ||
+      host.startsWith('feb0:')
+    )
+      return true; // fe80::/10 link-local
+  }
 
   return false;
 }
