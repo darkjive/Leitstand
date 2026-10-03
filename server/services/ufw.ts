@@ -80,8 +80,8 @@ function parseUFWLogLine(line: string): UFWLogEntry | null {
   }
 
   // Extract network details
-  const srcMatch = line.match(/SRC=([\d.]+)/);
-  const dstMatch = line.match(/DST=([\d.]+)/);
+  const srcMatch = line.match(/SRC=([0-9a-fA-F:.]+)/);
+  const dstMatch = line.match(/DST=([0-9a-fA-F:.]+)/);
   const protoMatch = line.match(/PROTO=(\w+)/);
   const sportMatch = line.match(/SPT=(\d+)/);
   const dportMatch = line.match(/DPT=(\d+)/);
@@ -121,9 +121,9 @@ export async function getUFWLogs(limit = 100): Promise<UFWLogEntry[]> {
       ),
     // systemd-journald: Arch/NixOS/Fedora store kernel logs only here.
     () =>
-      execAsync(`journalctl -k -o short-iso --no-pager -n ${safeLimit * 5} 2>/dev/null | grep -i UFW`).then(
-        r => r.stdout
-      ),
+      execAsync(
+        `journalctl -k -o short-iso --no-pager -n ${safeLimit * 5} 2>/dev/null | grep -i UFW`
+      ).then(r => r.stdout),
   ];
 
   for (const read of sources) {
@@ -169,7 +169,8 @@ export async function getUFWStatus(): Promise<UFWStatus> {
     const { stdout: statusOutput } = await execAsync('sudo -n ufw status verbose');
 
     const lines = statusOutput.split('\n');
-    const active = lines[0]?.includes('active') || false;
+    // "Status: inactive" also contains "active" — match the word after the colon
+    const active = /^Status:\s+active\b/i.test(lines[0] ?? '');
 
     // Parse default policies
     const loggingMatch = statusOutput.match(/Logging:\s+(.+)/);
