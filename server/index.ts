@@ -972,18 +972,18 @@ if (!isLoopbackBind && !DASHBOARD_TOKEN) {
 }
 
 server.listen(PORT, HOST, () => {
-  console.log(`\n🚀 Leitstand API running on http://${HOST}:${PORT}`);
-  console.log(`📊 System Metrics (HTTP): http://${HOST}:${PORT}/api/metrics`);
-  console.log(`📊 System Metrics (WebSocket): ws://${HOST}:${PORT}/ws`);
-  console.log(`🌤️  Weather: http://${HOST}:${PORT}/api/weather?location=Munich`);
-  console.log(`🤖 Ollama Proxy: POST http://${HOST}:${PORT}/api/ollama/*`);
-  console.log(`🌐 Web Scraper: POST http://${HOST}:${PORT}/api/scrape`);
-  console.log(`✅ Health Check: http://${HOST}:${PORT}/health`);
+  console.log(`\nLeitstand API running on http://${HOST}:${PORT}`);
+  console.log(`System Metrics (HTTP): http://${HOST}:${PORT}/api/metrics`);
+  console.log(`System Metrics (WebSocket): ws://${HOST}:${PORT}/ws`);
+  console.log(`Weather: http://${HOST}:${PORT}/api/weather?location=Munich`);
+  console.log(`Ollama Proxy: POST http://${HOST}:${PORT}/api/ollama/*`);
+  console.log(`Web Scraper: POST http://${HOST}:${PORT}/api/scrape`);
+  console.log(`Health Check: http://${HOST}:${PORT}/health`);
   if (HOST === '127.0.0.1' || HOST === '::1') {
-    console.log(`\n🔒 Listening on loopback only. Set BIND_HOST=0.0.0.0 to expose on LAN.\n`);
+    console.log(`\nListening on loopback only. Set BIND_HOST=0.0.0.0 to expose on LAN.\n`);
   } else {
     console.log(
-      `\n⚠️  WARNING: listening on ${HOST} — endpoints have NO AUTH other than DASHBOARD_TOKEN. Anyone with the token can run git push, kill processes, run npm scripts, etc.\n`
+      `\nWARNING: listening on ${HOST} — endpoints have NO AUTH other than DASHBOARD_TOKEN. Anyone with the token can run git push, kill processes, run npm scripts, etc.\n`
     );
   }
 });

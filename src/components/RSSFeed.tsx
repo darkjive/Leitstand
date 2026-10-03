@@ -83,7 +83,7 @@ export function RSSFeed({ url, maxItems = 10 }: RSSFeedProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-32">
-        <Loader2 className="w-6 h-6 text-cyber-cyan animate-spin" />
+        <Loader2 className="w-6 h-6 text-accent animate-spin" />
       </div>
     );
   }
@@ -113,12 +113,12 @@ export function RSSFeed({ url, maxItems = 10 }: RSSFeedProps) {
           href={item.link}
           target="_blank"
           rel="noopener noreferrer"
-          className="block p-3 bg-cyber-darkbg border border-cyber-border rounded hover:border-cyber-cyan transition-all group"
+          className="block p-3 bg-bg border border-line rounded hover:border-accent transition-all group"
         >
           <div className="flex items-start gap-2">
-            <ExternalLink className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5 group-hover:text-cyber-cyan transition-colors" />
+            <ExternalLink className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5 group-hover:text-accent transition-colors" />
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-bold text-gray-200 group-hover:text-cyber-cyan transition-colors line-clamp-2 mb-1">
+              <h3 className="text-sm font-bold text-gray-200 group-hover:text-accent transition-colors line-clamp-2 mb-1">
                 {item.title}
               </h3>
               {(item.description || item.content) && (

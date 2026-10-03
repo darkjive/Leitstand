@@ -72,7 +72,7 @@ export function ServiceStatus() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-cyber-cyan">
+        <div className="text-accent">
           CHECKING SERVICES<span className="blink-cursor"></span>
         </div>
       </div>
@@ -83,15 +83,15 @@ export function ServiceStatus() {
     <div className="h-full overflow-y-auto">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Wifi className="w-5 h-5 text-cyber-cyan" />
-          <h3 className="text-lg font-bold cyber-glow">SERVICE STATUS</h3>
+          <Wifi className="w-5 h-5 text-accent" />
+          <h3 className="text-lg font-bold">SERVICE STATUS</h3>
         </div>
         <button
           onClick={fetchStatus}
-          className="p-1.5 hover:bg-cyber-cyan/10 rounded transition-all"
+          className="p-1.5 hover:bg-accent/10 rounded transition-all"
           title="Refresh"
         >
-          <RefreshCw className="w-4 h-4 text-gray-400 hover:text-cyber-cyan" />
+          <RefreshCw className="w-4 h-4 text-gray-400 hover:text-accent" />
         </button>
       </div>
 
@@ -104,11 +104,11 @@ export function ServiceStatus() {
               href={service.statusUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="block p-3 bg-cyber-darkbg rounded border border-cyber-border hover:border-cyber-cyan transition-all"
+              className="block p-3 bg-bg rounded border border-line hover:border-accent transition-all"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Icon className="w-4 h-4 text-cyber-cyan" />
+                  <Icon className="w-4 h-4 text-accent" />
                   <span className="font-mono text-sm">{service.name}</span>
                 </div>
                 <div className="flex items-center gap-2">

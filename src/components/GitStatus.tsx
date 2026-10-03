@@ -52,9 +52,9 @@ const STATE_META: Record<RepoState, { label: string; dot: string; text: string; 
     },
     ahead: {
       label: 'ahead',
-      dot: 'bg-cyber-cyan',
-      text: 'text-cyber-cyan',
-      border: 'border-cyber-cyan/40',
+      dot: 'bg-accent',
+      text: 'text-accent',
+      border: 'border-accent/40',
     },
     behind: {
       label: 'behind',
@@ -378,7 +378,7 @@ export function GitStatus() {
   if (roots.length === 0) {
     return (
       <div className="h-full flex flex-col items-center justify-center text-center p-4">
-        <FolderGit2 className="w-10 h-12 text-cyber-cyan mb-3" />
+        <FolderGit2 className="w-10 h-12 text-accent mb-3" />
         <h3 className="text-sm font-bold text-gray-200 mb-1">No Dev roots configured</h3>
         <p className="text-xs text-gray-500 mb-4">Add a directory to scan for git repositories.</p>
         <div className="w-full max-w-sm">
@@ -388,12 +388,12 @@ export function GitStatus() {
             onChange={e => setNewRoot(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && addRoot()}
             placeholder="/home/user/Dev"
-            className="w-full px-3 py-2 bg-cyber-darkbg border border-cyber-border text-gray-300 text-xs rounded font-mono mb-2"
+            className="w-full px-3 py-2 bg-bg border border-line text-gray-300 text-xs rounded font-mono mb-2"
             autoFocus
           />
           <button
             onClick={addRoot}
-            className="w-full bg-cyber-cyan text-black px-3 py-2 rounded text-xs font-bold hover:bg-cyber-orange transition-colors"
+            className="w-full bg-accent text-black px-3 py-2 rounded text-xs font-bold hover:bg-accent-bright transition-colors"
           >
             Add Root & Scan
           </button>
@@ -405,17 +405,17 @@ export function GitStatus() {
   return (
     <div className="h-full flex flex-col">
       {/* ---- Header ---- */}
-      <div className="px-3 py-2 border-b border-cyber-border flex-shrink-0">
+      <div className="px-3 py-2 border-b border-line flex-shrink-0">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <FolderGit2 className="w-4 h-4 text-cyber-cyan" />
+            <FolderGit2 className="w-4 h-4 text-accent" />
             <span className="text-xs font-bold text-gray-200">
               {repos.length} repo{repos.length === 1 ? '' : 's'}
             </span>
             <span className="text-xs text-gray-600">·</span>
             <span className="text-xs text-gray-500">{timeAgo(lastScan)}</span>
           </div>
-          <button onClick={scan} disabled={scanning} className="cyber-button p-1" title="Rescan">
+          <button onClick={scan} disabled={scanning} className="ls-button p-1" title="Rescan">
             <RefreshCw className={`w-3.5 h-3.5 ${scanning ? 'animate-spin' : ''}`} />
           </button>
         </div>
@@ -425,7 +425,7 @@ export function GitStatus() {
           {roots.map(r => (
             <span
               key={r}
-              className="inline-flex items-center gap-1 px-2 py-0.5 bg-cyber-cardbg border border-cyber-border rounded text-xs text-gray-400 font-mono max-w-[140px] truncate"
+              className="inline-flex items-center gap-1 px-2 py-0.5 bg-elevated border border-line rounded text-xs text-gray-400 font-mono max-w-[140px] truncate"
               title={r}
             >
               {r.split('/').pop() || r}
@@ -440,7 +440,7 @@ export function GitStatus() {
           ))}
           <button
             onClick={() => setShowAddRoot(!showAddRoot)}
-            className="inline-flex items-center gap-1 px-2 py-0.5 border border-dashed border-cyber-border rounded text-xs text-gray-500 hover:text-cyber-cyan hover:border-cyber-cyan"
+            className="inline-flex items-center gap-1 px-2 py-0.5 border border-dashed border-line rounded text-xs text-gray-500 hover:text-accent hover:border-accent"
           >
             <Plus className="w-3 h-3" /> root
           </button>
@@ -454,12 +454,12 @@ export function GitStatus() {
               onChange={e => setNewRoot(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && addRoot()}
               placeholder="/home/user/Dev"
-              className="flex-1 px-2 py-1 bg-cyber-darkbg border border-cyber-border text-gray-300 text-xs rounded font-mono"
+              className="flex-1 px-2 py-1 bg-bg border border-line text-gray-300 text-xs rounded font-mono"
               autoFocus
             />
             <button
               onClick={addRoot}
-              className="bg-cyber-cyan text-black px-3 py-1 rounded text-xs font-bold"
+              className="bg-accent text-black px-3 py-1 rounded text-xs font-bold"
             >
               Add
             </button>
@@ -479,12 +479,12 @@ export function GitStatus() {
       </div>
 
       {/* ---- Stat strip ---- */}
-      <div className="flex items-center gap-2 px-3 py-1.5 border-b border-cyber-border text-xs flex-shrink-0">
+      <div className="flex items-center gap-2 px-3 py-1.5 border-b border-line text-xs flex-shrink-0">
         <span className="text-green-400">{stats.clean} clean</span>
         <span className="text-gray-700">·</span>
         <span className="text-yellow-400">{stats.dirty} dirty</span>
         <span className="text-gray-700">·</span>
-        <span className="text-cyber-cyan">{stats.ahead} ahead</span>
+        <span className="text-accent">{stats.ahead} ahead</span>
         <span className="text-gray-700">·</span>
         <span className="text-orange-400">{stats.behind} behind</span>
         {stats.conflict > 0 && (
@@ -496,7 +496,7 @@ export function GitStatus() {
       </div>
 
       {/* ---- Toolbar: filter + search + bulk ---- */}
-      <div className="px-3 py-2 border-b border-cyber-border space-y-2 flex-shrink-0">
+      <div className="px-3 py-2 border-b border-line space-y-2 flex-shrink-0">
         <div className="flex items-center gap-1 flex-wrap">
           {(['all', 'dirty', 'ahead', 'behind', 'conflict'] as FilterKey[]).map(f => (
             <button
@@ -504,8 +504,8 @@ export function GitStatus() {
               onClick={() => setFilter(f)}
               className={`px-2 py-0.5 rounded text-xs border transition-colors ${
                 filter === f
-                  ? 'border-cyber-cyan text-cyber-cyan bg-cyber-cyan/10'
-                  : 'border-cyber-border text-gray-500 hover:text-gray-300'
+                  ? 'border-accent text-accent bg-accent/10'
+                  : 'border-line text-gray-500 hover:text-gray-300'
               }`}
             >
               {f}
@@ -517,7 +517,7 @@ export function GitStatus() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="search"
-              className="pl-7 pr-2 py-0.5 bg-cyber-darkbg border border-cyber-border text-gray-300 text-xs rounded w-32"
+              className="pl-7 pr-2 py-0.5 bg-bg border border-line text-gray-300 text-xs rounded w-32"
             />
           </div>
         </div>
@@ -526,7 +526,7 @@ export function GitStatus() {
           <button
             onClick={() => openConfirm('fetch')}
             disabled={bulkLoading !== null}
-            className="cyber-button flex items-center justify-center gap-1 text-xs py-1"
+            className="ls-button flex items-center justify-center gap-1 text-xs py-1"
             title="Fetch all filtered (git fetch --all --prune)"
           >
             {bulkLoading === 'fetch' ? (
@@ -539,7 +539,7 @@ export function GitStatus() {
           <button
             onClick={() => openConfirm('pull')}
             disabled={bulkLoading !== null}
-            className="cyber-button flex items-center justify-center gap-1 text-xs py-1"
+            className="ls-button flex items-center justify-center gap-1 text-xs py-1"
             title="Pull all filtered"
           >
             {bulkLoading === 'pull' ? (
@@ -552,7 +552,7 @@ export function GitStatus() {
           <button
             onClick={() => openConfirm('push')}
             disabled={bulkLoading !== null}
-            className="cyber-button flex items-center justify-center gap-1 text-xs py-1"
+            className="ls-button flex items-center justify-center gap-1 text-xs py-1"
             title="Push all filtered"
           >
             {bulkLoading === 'push' ? (
@@ -565,7 +565,7 @@ export function GitStatus() {
           <button
             onClick={() => setBulkCommitOpen(true)}
             disabled={bulkLoading !== null}
-            className="cyber-button flex items-center justify-center gap-1 text-xs py-1"
+            className="ls-button flex items-center justify-center gap-1 text-xs py-1"
             title="Commit all dirty repos with one message"
           >
             {bulkLoading === 'commit' ? (
@@ -595,11 +595,11 @@ export function GitStatus() {
           const isExpanded = expanded === repo.path;
           const loading = actionLoading[repo.path];
           return (
-            <div key={repo.path} className="border-b border-cyber-border">
+            <div key={repo.path} className="border-b border-line">
               {/* Row */}
               <button
                 onClick={() => toggleExpand(repo.path)}
-                className="w-full text-left px-3 py-2 hover:bg-cyber-cardbg/50 flex items-center gap-2"
+                className="w-full text-left px-3 py-2 hover:bg-elevated/50 flex items-center gap-2"
               >
                 <ChevronRight
                   className={`w-3 h-3 text-gray-600 flex-shrink-0 transition-transform ${
@@ -615,7 +615,7 @@ export function GitStatus() {
                   </span>
                 )}
                 {repo.ahead > 0 && (
-                  <span className="inline-flex items-center gap-0.5 text-xs text-cyber-cyan">
+                  <span className="inline-flex items-center gap-0.5 text-xs text-accent">
                     <ArrowUp className="w-3 h-3" />
                     {repo.ahead}
                   </span>
@@ -638,7 +638,7 @@ export function GitStatus() {
 
               {/* Expanded detail */}
               {isExpanded && (
-                <div className="px-3 pb-3 bg-cyber-darkbg/40">
+                <div className="px-3 pb-3 bg-bg/40">
                   <div className="text-xs text-gray-600 font-mono mb-2 truncate">{repo.path}</div>
 
                   {repo.state === 'conflict' && (
@@ -650,7 +650,7 @@ export function GitStatus() {
 
                   {repo.lastCommit && (
                     <div className="text-xs text-gray-400 mb-2">
-                      <span className="font-mono text-cyber-cyan">{repo.lastCommit.hash}</span>{' '}
+                      <span className="font-mono text-accent">{repo.lastCommit.hash}</span>{' '}
                       {repo.lastCommit.message}
                       <span className="text-gray-600">
                         {' '}
@@ -664,7 +664,7 @@ export function GitStatus() {
                     <button
                       onClick={() => runRepoAction(repo.path, 'fetch')}
                       disabled={!!loading || !repo.hasUpstream}
-                      className="cyber-button flex items-center justify-center gap-1 text-xs py-1 disabled:opacity-40"
+                      className="ls-button flex items-center justify-center gap-1 text-xs py-1 disabled:opacity-40"
                     >
                       {loading === 'fetch' ? (
                         <RefreshCw className="w-3 h-3 animate-spin" />
@@ -676,7 +676,7 @@ export function GitStatus() {
                     <button
                       onClick={() => runRepoAction(repo.path, 'pull')}
                       disabled={!!loading || !repo.hasUpstream}
-                      className="cyber-button flex items-center justify-center gap-1 text-xs py-1 disabled:opacity-40"
+                      className="ls-button flex items-center justify-center gap-1 text-xs py-1 disabled:opacity-40"
                     >
                       {loading === 'pull' ? (
                         <RefreshCw className="w-3 h-3 animate-spin" />
@@ -688,7 +688,7 @@ export function GitStatus() {
                     <button
                       onClick={() => runRepoAction(repo.path, 'push')}
                       disabled={!!loading || !repo.hasUpstream}
-                      className="cyber-button flex items-center justify-center gap-1 text-xs py-1 disabled:opacity-40"
+                      className="ls-button flex items-center justify-center gap-1 text-xs py-1 disabled:opacity-40"
                     >
                       {loading === 'push' ? (
                         <RefreshCw className="w-3 h-3 animate-spin" />
@@ -704,7 +704,7 @@ export function GitStatus() {
                     <button
                       onClick={() => setShowCommitInput(true)}
                       disabled={repo.changedFiles === 0}
-                      className="w-full cyber-button flex items-center justify-center gap-1 text-xs py-1 disabled:opacity-40"
+                      className="w-full ls-button flex items-center justify-center gap-1 text-xs py-1 disabled:opacity-40"
                     >
                       <GitCommit className="w-3 h-3" />
                       Commit {repo.changedFiles > 0 ? `(${repo.changedFiles})` : ''}
@@ -723,14 +723,14 @@ export function GitStatus() {
                           }
                         }}
                         placeholder="commit message..."
-                        className="w-full px-2 py-1 bg-cyber-darkbg border border-cyber-border text-gray-300 rounded text-xs"
+                        className="w-full px-2 py-1 bg-bg border border-line text-gray-300 rounded text-xs"
                         autoFocus
                       />
                       <div className="flex gap-1">
                         <button
                           onClick={() => handleCommit(repo.path)}
                           disabled={loading === 'commit' || !commitMsg.trim()}
-                          className="flex-1 bg-cyber-cyan text-black px-2 py-1 rounded text-xs font-bold disabled:opacity-50"
+                          className="flex-1 bg-accent text-black px-2 py-1 rounded text-xs font-bold disabled:opacity-50"
                         >
                           {loading === 'commit' ? 'Committing...' : 'Commit All'}
                         </button>
@@ -784,7 +784,7 @@ export function GitStatus() {
             </button>
             <button
               onClick={() => runBulk(confirm.op, confirm.paths)}
-              className="px-3 py-1.5 bg-cyber-cyan text-black rounded text-xs font-bold hover:bg-cyber-orange"
+              className="px-3 py-1.5 bg-accent text-black rounded text-xs font-bold hover:bg-accent-bright"
             >
               {bulkLoading === confirm.op ? 'Running...' : `Confirm ${confirm.op.toUpperCase()}`}
             </button>
@@ -803,7 +803,7 @@ export function GitStatus() {
             value={bulkCommitMsg}
             onChange={e => setBulkCommitMsg(e.target.value)}
             placeholder="commit message for all repos..."
-            className="w-full px-2 py-1 bg-cyber-darkbg border border-cyber-border text-gray-300 rounded text-xs font-mono mb-2 h-20 resize-none"
+            className="w-full px-2 py-1 bg-bg border border-line text-gray-300 rounded text-xs font-mono mb-2 h-20 resize-none"
             autoFocus
           />
           <div className="flex gap-2 justify-end">
@@ -816,7 +816,7 @@ export function GitStatus() {
             <button
               onClick={runBulkCommit}
               disabled={!bulkCommitMsg.trim()}
-              className="px-3 py-1.5 bg-cyber-cyan text-black rounded text-xs font-bold disabled:opacity-50"
+              className="px-3 py-1.5 bg-accent text-black rounded text-xs font-bold disabled:opacity-50"
             >
               Commit All
             </button>
@@ -922,11 +922,11 @@ function Modal({
       onClick={onClose}
     >
       <div
-        className="bg-cyber-darkbg border border-cyber-cyan rounded-lg p-4 max-w-md w-full shadow-lg shadow-cyber-cyan/20"
+        className="bg-bg border border-accent rounded-lg p-4 max-w-md w-full shadow-lg shadow-accent/20"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-cyber-cyan">{title}</h3>
+          <h3 className="text-sm font-bold text-accent">{title}</h3>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-300">
             <X className="w-4 h-4" />
           </button>

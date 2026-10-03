@@ -26,7 +26,35 @@ import { FirewallMonitor } from './components/FirewallMonitor';
 import { SettingsPanel } from './components/SettingsPanel';
 import { useSetting } from './lib/settings';
 import { Toaster } from './components/Toaster';
-import { RotateCcw, Eye, EyeOff, Save, Settings } from 'lucide-react';
+import {
+  RotateCcw,
+  Eye,
+  EyeOff,
+  Save,
+  Settings,
+  Activity,
+  Bot,
+  ChartLine,
+  CloudSun,
+  Container,
+  Cpu,
+  FileText,
+  Flame,
+  GitBranch,
+  Github,
+  Globe,
+  Gpu,
+  HardDrive,
+  Link,
+  MemoryStick,
+  Package,
+  Radio,
+  Rss,
+  ScrollText,
+  ShieldAlert,
+  Thermometer,
+  Zap,
+} from 'lucide-react';
 import 'react-grid-layout/css/styles.css';
 import { apiFetch } from './lib/api';
 
@@ -121,28 +149,28 @@ interface WidgetHealth {
 }
 
 const widgetConfig = {
-  'metrics-cpu': { name: '📊 CPU', component: CpuWidget },
-  'metrics-memory': { name: '📊 MEMORY', component: MemoryWidget },
-  'metrics-graph': { name: '📈 PERFORMANCE', component: MetricsGraphWidget },
-  'metrics-vram': { name: '📊 VRAM', component: VramWidget },
-  'metrics-storage': { name: '📊 STORAGE', component: StorageWidget },
-  'metrics-temp': { name: '🌡️ TEMPERATURE', component: TemperatureWidget },
-  chatbot: { name: '🤖 AI CHATBOT', component: ChatBot },
-  'quick-links': { name: '🔗 QUICK LINKS', component: QuickLinks },
-  'markdown-editor': { name: '📝 MARKDOWN EDITOR', component: MarkdownEditor },
-  'web-scraper': { name: '🌐 WEB SCRAPER', component: WebScraper },
-  weather: { name: '🌦️ WEATHER', component: WeatherWidget },
-  github: { name: '💻 GITHUB STATS', component: GitHubStats },
-  'hacker-news': { name: '🔥 HACKER NEWS', component: HackerNewsFeed },
-  'custom-rss': { name: '📡 CUSTOM RSS', component: CustomRSSFeed },
-  'service-status': { name: '🌐 SERVICE STATUS', component: ServiceStatus },
-  'network-outage': { name: '📡 NETWORK OUTAGES', component: NetworkOutageMap },
-  'port-killer': { name: '⚡ PORT KILLER', component: PortKiller },
-  'git-status': { name: '🔀 GIT STATUS', component: GitStatus },
-  'npm-script-runner': { name: '📦 NPM SCRIPTS', component: NpmScriptRunner },
-  'log-aggregator': { name: '📜 LOG AGGREGATOR', component: LogAggregator },
-  docker: { name: '🐳 DOCKER', component: DockerWidget },
-  'firewall-monitor': { name: '🔥 FIREWALL', component: FirewallMonitor },
+  'metrics-cpu': { name: 'CPU', icon: Cpu, component: CpuWidget },
+  'metrics-memory': { name: 'MEMORY', icon: MemoryStick, component: MemoryWidget },
+  'metrics-graph': { name: 'PERFORMANCE', icon: ChartLine, component: MetricsGraphWidget },
+  'metrics-vram': { name: 'VRAM', icon: Gpu, component: VramWidget },
+  'metrics-storage': { name: 'STORAGE', icon: HardDrive, component: StorageWidget },
+  'metrics-temp': { name: 'TEMPERATURE', icon: Thermometer, component: TemperatureWidget },
+  chatbot: { name: 'AI CHATBOT', icon: Bot, component: ChatBot },
+  'quick-links': { name: 'QUICK LINKS', icon: Link, component: QuickLinks },
+  'markdown-editor': { name: 'MARKDOWN EDITOR', icon: FileText, component: MarkdownEditor },
+  'web-scraper': { name: 'WEB SCRAPER', icon: Globe, component: WebScraper },
+  weather: { name: 'WEATHER', icon: CloudSun, component: WeatherWidget },
+  github: { name: 'GITHUB STATS', icon: Github, component: GitHubStats },
+  'hacker-news': { name: 'HACKER NEWS', icon: Flame, component: HackerNewsFeed },
+  'custom-rss': { name: 'CUSTOM RSS', icon: Rss, component: CustomRSSFeed },
+  'service-status': { name: 'SERVICE STATUS', icon: Activity, component: ServiceStatus },
+  'network-outage': { name: 'NETWORK OUTAGES', icon: Radio, component: NetworkOutageMap },
+  'port-killer': { name: 'PORT KILLER', icon: Zap, component: PortKiller },
+  'git-status': { name: 'GIT STATUS', icon: GitBranch, component: GitStatus },
+  'npm-script-runner': { name: 'NPM SCRIPTS', icon: Package, component: NpmScriptRunner },
+  'log-aggregator': { name: 'LOG AGGREGATOR', icon: ScrollText, component: LogAggregator },
+  docker: { name: 'DOCKER', icon: Container, component: DockerWidget },
+  'firewall-monitor': { name: 'FIREWALL', icon: ShieldAlert, component: FirewallMonitor },
 };
 
 function validateEnabledWidgets(data: unknown): boolean {
@@ -410,15 +438,15 @@ function App() {
   return (
     <div className="min-h-screen">
       <header
-        className="border-b border-cyber-border backdrop-blur-sm sticky top-0 z-50"
-        style={{ backgroundColor: 'var(--color-cyber-darkbg)' }}
+        className="border-b border-line backdrop-blur-sm sticky top-0 z-50"
+        style={{ backgroundColor: 'var(--color-bg)' }}
       >
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <img src="/favicon.svg" alt="" className="w-8 h-8" />
               <div>
-                <h1 className="text-2xl font-bold cyber-glow">
+                <h1 className="text-2xl font-bold">
                   Leitstand<span className="blink-cursor"></span>
                 </h1>
                 <p className="text-xs text-gray-400">Homelab Control Center</p>
@@ -426,10 +454,10 @@ function App() {
             </div>
             <div className="flex items-center gap-2">
               <SoundManager />
-              <div className="w-px h-6 bg-cyber-border" />
+              <div className="w-px h-6 bg-line" />
               <button
                 onClick={() => setShowWidgetControls(!showWidgetControls)}
-                className="cyber-button flex items-center gap-2 text-sm"
+                className="ls-button flex items-center gap-2 text-sm"
                 title="Toggle Widgets"
               >
                 {showWidgetControls ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -437,7 +465,7 @@ function App() {
               </button>
               <button
                 onClick={() => setShowSettings(!showSettings)}
-                className={`cyber-button flex items-center gap-2 text-sm ${showSettings ? 'bg-cyber-cyan/20' : ''}`}
+                className={`ls-button flex items-center gap-2 text-sm ${showSettings ? 'bg-accent/20' : ''}`}
                 title="Settings"
               >
                 <Settings className="w-4 h-4" />
@@ -445,7 +473,7 @@ function App() {
               </button>
               <button
                 onClick={manualSave}
-                className={`cyber-button flex items-center gap-2 text-sm ${showSaved ? 'bg-green-500' : ''}`}
+                className={`ls-button flex items-center gap-2 text-sm ${showSaved ? 'bg-green-500' : ''}`}
                 title="Save Layout"
               >
                 <Save className="w-4 h-4" />
@@ -453,7 +481,7 @@ function App() {
               </button>
               <button
                 onClick={resetLayout}
-                className="cyber-button flex items-center gap-2 text-sm"
+                className="ls-button flex items-center gap-2 text-sm"
                 title="Reset Layout to Default"
               >
                 <RotateCcw className="w-4 h-4" />
@@ -463,10 +491,10 @@ function App() {
           </div>
 
           {showWidgetControls && (
-            <div className="mt-4 pt-4 border-t border-cyber-border space-y-4">
+            <div className="mt-4 pt-4 border-t border-line space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-bold text-cyber-cyan">WIDGET VISIBILITY</h3>
+                  <h3 className="text-sm font-bold text-accent">WIDGET VISIBILITY</h3>
                   <div className="flex items-center gap-4 text-xs text-gray-400">
                     <div className="flex items-center gap-1">
                       <div className="w-2 h-2 rounded-full bg-green-500" />
@@ -510,6 +538,7 @@ function App() {
                                 : 'bg-green-500'
                           }`}
                         />
+                        <config.icon size={12} className="shrink-0" />
                         <span className="truncate">{config.name}</span>
                       </button>
                     );
@@ -551,8 +580,11 @@ function App() {
                 className={isDragging ? 'dragging' : ''}
                 style={{ pointerEvents: 'auto' }}
               >
-                <div className="drag-handle cursor-move p-2 border-b border-cyber-border hover:bg-cyber-cyan/10 select-none">
-                  <div className="text-xs font-bold text-gray-400">{config.name}</div>
+                <div className="drag-handle cursor-move p-2 border-b border-line hover:bg-accent/10 select-none">
+                  <div className="text-xs font-bold text-gray-400 flex items-center gap-1.5">
+                    <config.icon size={12} />
+                    {config.name}
+                  </div>
                 </div>
                 <div
                   className="p-4 overflow-auto"
@@ -569,17 +601,13 @@ function App() {
           })}
         </GridLayout>
 
-        <footer className="mt-12 py-6 border-t border-cyber-border text-center">
+        <footer className="mt-12 py-6 border-t border-line text-center">
           <p className="text-sm text-gray-500">
             Leitstand // Powered by React 19 + Vite 7 + Tailwind 4
           </p>
-          <p className="text-xs text-gray-600 mt-2">
-            Built with <span style={{ color: 'var(--color-cyber-cyan)' }}>Cyan</span> and{' '}
-            <span style={{ color: 'var(--color-cyber-orange)' }}>Orange</span> // Drag widgets to
-            customize
-          </p>
+          <p className="text-xs text-gray-600 mt-2">Widgets per Drag &amp; Drop anordnen</p>
           <p className="text-xs text-gray-700 mt-2">
-            Crafted by <span style={{ color: 'var(--color-cyber-cyan)' }}>𐌀𐌋𐌀𐌉𐌍</span>
+            Crafted by <span style={{ color: 'var(--color-accent)' }}>𐌀𐌋𐌀𐌉𐌍</span>
           </p>
         </footer>
       </div>

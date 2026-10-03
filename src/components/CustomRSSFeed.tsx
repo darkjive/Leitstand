@@ -52,10 +52,10 @@ export function CustomRSSFeed() {
     <div className="h-full flex flex-col">
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
-        <h3 className="text-lg font-bold cyber-glow">CUSTOM RSS</h3>
+        <h3 className="text-lg font-bold">CUSTOM RSS</h3>
         <button
           onClick={() => setIsEditing(!isEditing)}
-          className="ml-auto p-1.5 rounded bg-cyber-darkbg border border-cyber-border hover:border-cyber-cyan transition-all"
+          className="ml-auto p-1.5 rounded bg-bg border border-line hover:border-accent transition-all"
           title={isEditing ? 'Done editing' : 'Manage feeds'}
         >
           {isEditing ? <Save className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
@@ -64,14 +64,14 @@ export function CustomRSSFeed() {
 
       {/* Edit Mode */}
       {isEditing && (
-        <div className="mb-3 p-3 bg-cyber-darkbg border border-cyber-cyan rounded space-y-2">
+        <div className="mb-3 p-3 bg-bg border border-accent rounded space-y-2">
           <div className="flex gap-2">
             <input
               type="text"
               placeholder="Feed name..."
               value={newFeedName}
               onChange={e => setNewFeedName(e.target.value)}
-              className="flex-1 px-2 py-1 bg-cyber-darkbg border border-cyber-border rounded text-sm text-gray-200 focus:border-cyber-cyan focus:outline-none"
+              className="flex-1 px-2 py-1 bg-bg border border-line rounded text-sm text-gray-200 focus:border-accent focus:outline-none"
             />
           </div>
           <div className="flex gap-2">
@@ -80,7 +80,7 @@ export function CustomRSSFeed() {
               placeholder="Feed URL..."
               value={newFeedUrl}
               onChange={e => setNewFeedUrl(e.target.value)}
-              className="flex-1 px-2 py-1 bg-cyber-darkbg border border-cyber-border rounded text-sm text-gray-200 focus:border-cyber-cyan focus:outline-none"
+              className="flex-1 px-2 py-1 bg-bg border border-line rounded text-sm text-gray-200 focus:border-accent focus:outline-none"
             />
             <button
               onClick={addFeed}
@@ -95,7 +95,7 @@ export function CustomRSSFeed() {
             {feeds.map(feed => (
               <div
                 key={feed.id}
-                className="flex items-center gap-2 p-2 bg-cyber-darkbg/50 border border-cyber-border rounded"
+                className="flex items-center gap-2 p-2 bg-bg/50 border border-line rounded"
               >
                 <span className="flex-1 text-xs text-gray-300 truncate">{feed.name}</span>
                 <button
@@ -118,8 +118,8 @@ export function CustomRSSFeed() {
             onClick={() => setActiveFeedId(feed.id)}
             className={`px-3 py-1 text-xs font-bold rounded whitespace-nowrap transition-all ${
               activeFeedId === feed.id
-                ? 'bg-cyber-cyan text-cyber-darkbg'
-                : 'bg-cyber-darkbg border border-cyber-border text-gray-400 hover:border-cyber-cyan'
+                ? 'bg-accent text-bg'
+                : 'bg-bg border border-line text-gray-400 hover:border-accent'
             }`}
           >
             {feed.name}

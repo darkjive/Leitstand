@@ -63,11 +63,11 @@ export function SoundManager() {
 
       <button
         onClick={toggleSound}
-        className="p-2 hover:bg-cyber-cyan/10 rounded transition-all"
+        className="p-2 hover:bg-accent/10 rounded transition-all"
         title={soundEnabled ? 'Mute Ambiance' : 'Play Ambiance'}
       >
         {soundEnabled ? (
-          <Volume2 className="w-5 h-5 text-cyber-cyan" />
+          <Volume2 className="w-5 h-5 text-accent" />
         ) : (
           <VolumeX className="w-5 h-5 text-gray-500" />
         )}
@@ -82,7 +82,7 @@ export function SoundManager() {
             step="0.1"
             value={volume}
             onChange={handleVolumeChange}
-            className="w-20 accent-cyber-cyan"
+            className="w-20 accent-accent"
           />
           <span className="text-xs text-gray-400 w-8">{Math.round(volume * 100)}%</span>
         </div>

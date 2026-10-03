@@ -7,18 +7,18 @@ function formatBytes(bytes: number) {
 
 export function StorageWidget() {
   return (
-    <MetricsShell title="STORAGE" icon={<HardDrive className="text-cyber-cyan w-5 h-5" />}>
+    <MetricsShell title="STORAGE" icon={<HardDrive className="text-accent w-5 h-5" />}>
       {metrics =>
         metrics.disk.length > 0 ? (
           <div className="space-y-3">
             {metrics.disk.slice(0, 3).map((disk, i) => (
               <div
                 key={i}
-                className="border-t border-cyber-border pt-3 first:border-t-0 first:pt-0"
+                className="border-t border-line pt-3 first:border-t-0 first:pt-0"
               >
                 <div className="flex justify-between mb-1">
                   <span className="text-gray-400 font-mono text-xs">{disk.mount}</span>
-                  <span className="text-cyber-cyan font-bold text-sm">
+                  <span className="text-accent font-bold text-sm">
                     {disk.percentage.toFixed(1)}%
                   </span>
                 </div>
@@ -34,8 +34,8 @@ export function StorageWidget() {
                       disk.percentage > 90
                         ? 'bg-red-500'
                         : disk.percentage > 70
-                          ? 'bg-cyber-orange'
-                          : 'bg-cyber-cyan'
+                          ? 'bg-accent-bright'
+                          : 'bg-accent'
                     }`}
                     style={{ width: `${disk.percentage}%` }}
                   />

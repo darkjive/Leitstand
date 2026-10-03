@@ -313,7 +313,7 @@ export function QuickLinks() {
       <div className="mb-4">
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="cyber-button w-full flex items-center justify-center gap-2 text-sm"
+          className="ls-button w-full flex items-center justify-center gap-2 text-sm"
         >
           {showAddForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
           {showAddForm ? 'Cancel' : 'Add Link'}
@@ -322,21 +322,21 @@ export function QuickLinks() {
 
       {/* Add Link Form */}
       {showAddForm && (
-        <div className="mb-4 p-4 bg-cyber-darkbg rounded-lg border border-cyber-cyan">
+        <div className="mb-4 p-4 bg-bg rounded-lg border border-accent">
           <div className="space-y-3">
             <input
               type="text"
               placeholder="Name"
               value={formData.name}
               onChange={e => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3 py-2 bg-black/50 border border-cyber-border rounded text-sm text-gray-300 focus:border-cyber-cyan outline-none"
+              className="w-full px-3 py-2 bg-black/50 border border-line rounded text-sm text-gray-300 focus:border-accent outline-none"
             />
             <input
               type="url"
               placeholder="URL"
               value={formData.url}
               onChange={e => setFormData({ ...formData, url: e.target.value })}
-              className="w-full px-3 py-2 bg-black/50 border border-cyber-border rounded text-sm text-gray-300 focus:border-cyber-cyan outline-none"
+              className="w-full px-3 py-2 bg-black/50 border border-line rounded text-sm text-gray-300 focus:border-accent outline-none"
             />
 
             {/* Icon Type */}
@@ -350,7 +350,7 @@ export function QuickLinks() {
                     iconType: e.target.value as 'lucide' | 'brand' | 'custom',
                   })
                 }
-                className="w-full px-3 py-2 bg-black/50 border border-cyber-border rounded text-sm text-gray-300 focus:border-cyber-cyan outline-none"
+                className="w-full px-3 py-2 bg-black/50 border border-line rounded text-sm text-gray-300 focus:border-accent outline-none"
               >
                 <option value="lucide">Lucide Icon</option>
                 <option value="brand">Brand Logo</option>
@@ -365,7 +365,7 @@ export function QuickLinks() {
                 <select
                   value={formData.iconName}
                   onChange={e => setFormData({ ...formData, iconName: e.target.value })}
-                  className="w-full px-3 py-2 bg-black/50 border border-cyber-border rounded text-sm text-gray-300 focus:border-cyber-cyan outline-none"
+                  className="w-full px-3 py-2 bg-black/50 border border-line rounded text-sm text-gray-300 focus:border-accent outline-none"
                 >
                   {ICON_OPTIONS.map(icon => (
                     <option key={icon.name} value={icon.name}>
@@ -383,7 +383,7 @@ export function QuickLinks() {
                 <select
                   value={formData.brandId}
                   onChange={e => setFormData({ ...formData, brandId: e.target.value })}
-                  className="w-full px-3 py-2 bg-black/50 border border-cyber-border rounded text-sm text-gray-300 focus:border-cyber-cyan outline-none max-h-40 overflow-y-auto"
+                  className="w-full px-3 py-2 bg-black/50 border border-line rounded text-sm text-gray-300 focus:border-accent outline-none max-h-40 overflow-y-auto"
                 >
                   {BRAND_LOGOS.map(brand => (
                     <option key={brand.id} value={brand.id}>
@@ -403,7 +403,7 @@ export function QuickLinks() {
                   placeholder="https://example.com/logo.png"
                   value={formData.customLogoUrl}
                   onChange={e => setFormData({ ...formData, customLogoUrl: e.target.value })}
-                  className="w-full px-3 py-2 bg-black/50 border border-cyber-border rounded text-sm text-gray-300 focus:border-cyber-cyan outline-none"
+                  className="w-full px-3 py-2 bg-black/50 border border-line rounded text-sm text-gray-300 focus:border-accent outline-none"
                 />
               </div>
             )}
@@ -414,7 +414,7 @@ export function QuickLinks() {
               <select
                 value={formData.color}
                 onChange={e => setFormData({ ...formData, color: e.target.value })}
-                className="w-full px-3 py-2 bg-black/50 border border-cyber-border rounded text-sm text-gray-300 focus:border-cyber-cyan outline-none"
+                className="w-full px-3 py-2 bg-black/50 border border-line rounded text-sm text-gray-300 focus:border-accent outline-none"
               >
                 {COLOR_OPTIONS.map(color => (
                   <option key={color.value} value={color.value}>
@@ -427,7 +427,7 @@ export function QuickLinks() {
             <button
               onClick={addLink}
               disabled={!formData.name || !formData.url}
-              className="w-full px-4 py-2 bg-cyber-cyan text-black font-bold rounded hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              className="w-full px-4 py-2 bg-accent text-black font-bold rounded hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               Add Link
             </button>
@@ -443,10 +443,10 @@ export function QuickLinks() {
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block p-4 bg-cyber-darkbg rounded-lg border border-cyber-border hover:border-cyber-cyan transition-all hover:scale-105 flex flex-col items-center justify-center gap-2 text-center"
+              className="block p-4 bg-bg rounded-lg border border-line hover:border-accent transition-all hover:scale-105 flex flex-col items-center justify-center gap-2 text-center"
             >
               {renderIcon(link)}
-              <span className="text-xs font-mono text-gray-400 group-hover:text-cyber-cyan">
+              <span className="text-xs font-mono text-gray-400 group-hover:text-accent">
                 {link.name}
               </span>
               <ExternalLink className="w-3 h-3 text-gray-600 absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" />

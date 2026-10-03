@@ -96,21 +96,21 @@ export function MarkdownEditor() {
     // Headers
     html = html.replace(
       /^### (.*$)/gim,
-      '<h3 class="text-lg font-bold text-cyber-cyan mb-2 mt-4">$1</h3>'
+      '<h3 class="text-lg font-bold text-accent mb-2 mt-4">$1</h3>'
     );
     html = html.replace(
       /^## (.*$)/gim,
-      '<h2 class="text-xl font-bold text-cyber-cyan mb-3 mt-4">$1</h2>'
+      '<h2 class="text-xl font-bold text-accent mb-3 mt-4">$1</h2>'
     );
     html = html.replace(
       /^# (.*$)/gim,
-      '<h1 class="text-2xl font-bold text-cyber-cyan mb-4 mt-4">$1</h1>'
+      '<h1 class="text-2xl font-bold text-accent mb-4 mt-4">$1</h1>'
     );
 
     // Bold
     html = html.replace(
       /\*\*(.*?)\*\*/gim,
-      '<strong class="font-bold text-cyber-orange">$1</strong>'
+      '<strong class="font-bold text-accent-bright">$1</strong>'
     );
 
     // Italic
@@ -119,20 +119,20 @@ export function MarkdownEditor() {
     // Code blocks
     html = html.replace(
       /```([\s\S]*?)```/gim,
-      '<pre class="bg-cyber-darkbg border border-cyber-border rounded p-3 my-3 overflow-x-auto"><code class="text-sm font-mono text-green-300">$1</code></pre>'
+      '<pre class="bg-bg border border-line rounded p-3 my-3 overflow-x-auto"><code class="text-sm font-mono text-green-300">$1</code></pre>'
     );
 
     // Inline code
     html = html.replace(
       /`(.*?)`/gim,
-      '<code class="bg-cyber-darkbg px-1 py-0.5 rounded text-sm font-mono text-green-300">$1</code>'
+      '<code class="bg-bg px-1 py-0.5 rounded text-sm font-mono text-green-300">$1</code>'
     );
 
     // Links — only http(s) targets; anything else (javascript:, data:, …)
     // renders as plain text instead of a clickable link
     html = html.replace(/\[(.*?)\]\((.*?)\)/gim, (match, text: string, href: string) =>
       /^https?:\/\//i.test(href)
-        ? `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-cyber-cyan hover:text-cyber-orange underline">${text}</a>`
+        ? `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-accent hover:text-accent-bright underline">${text}</a>`
         : match
     );
 
@@ -150,18 +150,18 @@ export function MarkdownEditor() {
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <FileText className="w-5 h-5 text-cyber-cyan" />
-          <h3 className="text-lg font-bold cyber-glow">MARKDOWN EDITOR</h3>
+          <FileText className="w-5 h-5 text-accent" />
+          <h3 className="text-lg font-bold">MARKDOWN EDITOR</h3>
         </div>
         <div className="flex items-center gap-2">
           {/* Input Mode Toggle */}
-          <div className="flex gap-1 bg-cyber-darkbg border border-cyber-border rounded p-1">
+          <div className="flex gap-1 bg-bg border border-line rounded p-1">
             <button
               onClick={() => setInputMode('markdown')}
               className={`px-2 py-1 rounded text-xs transition-all ${
                 inputMode === 'markdown'
-                  ? 'bg-cyber-cyan text-cyber-darkbg'
-                  : 'text-gray-400 hover:text-cyber-cyan'
+                  ? 'bg-accent text-bg'
+                  : 'text-gray-400 hover:text-accent'
               }`}
             >
               MD
@@ -170,21 +170,21 @@ export function MarkdownEditor() {
               onClick={() => setInputMode('plaintext')}
               className={`px-2 py-1 rounded text-xs transition-all ${
                 inputMode === 'plaintext'
-                  ? 'bg-cyber-cyan text-cyber-darkbg'
-                  : 'text-gray-400 hover:text-cyber-cyan'
+                  ? 'bg-accent text-bg'
+                  : 'text-gray-400 hover:text-accent'
               }`}
             >
               TEXT
             </button>
           </div>
-          <div className="w-px h-4 bg-cyber-border" />
+          <div className="w-px h-4 bg-line" />
           <div className="flex items-center gap-1">
             <button
               onClick={() => setViewMode('edit')}
               className={`p-2 rounded transition-all ${
                 viewMode === 'edit'
-                  ? 'bg-cyber-cyan/20 text-cyber-cyan'
-                  : 'hover:bg-cyber-cyan/10 text-gray-400'
+                  ? 'bg-accent/20 text-accent'
+                  : 'hover:bg-accent/10 text-gray-400'
               }`}
               title="Edit Mode"
             >
@@ -194,8 +194,8 @@ export function MarkdownEditor() {
               onClick={() => setViewMode('preview')}
               className={`p-2 rounded transition-all ${
                 viewMode === 'preview'
-                  ? 'bg-cyber-cyan/20 text-cyber-cyan'
-                  : 'hover:bg-cyber-cyan/10 text-gray-400'
+                  ? 'bg-accent/20 text-accent'
+                  : 'hover:bg-accent/10 text-gray-400'
               }`}
               title="Preview Mode"
             >
@@ -205,8 +205,8 @@ export function MarkdownEditor() {
               onClick={() => setViewMode('split')}
               className={`p-2 rounded transition-all ${
                 viewMode === 'split'
-                  ? 'bg-cyber-cyan/20 text-cyber-cyan'
-                  : 'hover:bg-cyber-cyan/10 text-gray-400'
+                  ? 'bg-accent/20 text-accent'
+                  : 'hover:bg-accent/10 text-gray-400'
               }`}
               title="Split Mode"
             >
@@ -215,17 +215,17 @@ export function MarkdownEditor() {
                 <div className="w-1.5 h-4 bg-current" />
               </div>
             </button>
-            <div className="w-px h-4 bg-cyber-border mx-1" />
+            <div className="w-px h-4 bg-line mx-1" />
             <button
               onClick={copyToClipboard}
-              className="p-2 hover:bg-cyber-cyan/10 rounded transition-all"
+              className="p-2 hover:bg-accent/10 rounded transition-all"
               title="Copy to Clipboard"
             >
               <Copy className="w-4 h-4 text-gray-400" />
             </button>
             <button
               onClick={downloadMarkdown}
-              className="p-2 hover:bg-cyber-cyan/10 rounded transition-all"
+              className="p-2 hover:bg-accent/10 rounded transition-all"
               title="Download"
             >
               <Download className="w-4 h-4 text-gray-400" />
@@ -245,7 +245,7 @@ export function MarkdownEditor() {
       {inputMode === 'plaintext' && plainText.trim() && (
         <button
           onClick={convertToMarkdown}
-          className="mb-3 w-full cyber-button flex items-center justify-center gap-2 py-2"
+          className="mb-3 w-full ls-button flex items-center justify-center gap-2 py-2"
         >
           <Wand2 className="w-4 h-4" />
           <span>CONVERT TO MARKDOWN</span>
@@ -259,7 +259,7 @@ export function MarkdownEditor() {
           <textarea
             value={plainText}
             onChange={e => setPlainText(e.target.value)}
-            className="w-full h-full bg-cyber-darkbg border border-cyber-border rounded p-4 text-sm focus:border-cyber-cyan focus:outline-none resize-none"
+            className="w-full h-full bg-bg border border-line rounded p-4 text-sm focus:border-accent focus:outline-none resize-none"
             placeholder="Enter plain text here, then click 'Convert to Markdown'..."
           />
         ) : (
@@ -269,14 +269,14 @@ export function MarkdownEditor() {
               <textarea
                 value={markdown}
                 onChange={e => saveToLocalStorage(e.target.value)}
-                className="w-full h-full bg-cyber-darkbg border border-cyber-border rounded p-4 text-sm font-mono focus:border-cyber-cyan focus:outline-none resize-none"
+                className="w-full h-full bg-bg border border-line rounded p-4 text-sm font-mono focus:border-accent focus:outline-none resize-none"
                 placeholder="Start typing markdown..."
               />
             )}
 
             {viewMode === 'preview' && (
               <div
-                className="w-full h-full bg-cyber-darkbg border border-cyber-border rounded p-4 text-sm overflow-auto"
+                className="w-full h-full bg-bg border border-line rounded p-4 text-sm overflow-auto"
                 dangerouslySetInnerHTML={{ __html: renderMarkdown(markdown) }}
               />
             )}
@@ -286,11 +286,11 @@ export function MarkdownEditor() {
                 <textarea
                   value={markdown}
                   onChange={e => saveToLocalStorage(e.target.value)}
-                  className="flex-1 bg-cyber-darkbg border border-cyber-border rounded p-4 text-sm font-mono focus:border-cyber-cyan focus:outline-none resize-none"
+                  className="flex-1 bg-bg border border-line rounded p-4 text-sm font-mono focus:border-accent focus:outline-none resize-none"
                   placeholder="Start typing markdown..."
                 />
                 <div
-                  className="flex-1 bg-cyber-darkbg border border-cyber-border rounded p-4 text-sm overflow-auto"
+                  className="flex-1 bg-bg border border-line rounded p-4 text-sm overflow-auto"
                   dangerouslySetInnerHTML={{ __html: renderMarkdown(markdown) }}
                 />
               </div>

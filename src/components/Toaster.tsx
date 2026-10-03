@@ -5,7 +5,7 @@ import { TOAST_EVENT, type ToastItem, type ToastKind } from '../lib/toast';
 const KIND_CLASSES: Record<ToastKind, string> = {
   error: 'border-red-500/60 bg-red-950/90 text-red-200',
   success: 'border-green-500/60 bg-green-950/90 text-green-200',
-  info: 'border-cyber-cyan/60 bg-cyber-darkbg/95 text-cyber-cyan',
+  info: 'border-accent/60 bg-bg/95 text-accent',
 };
 
 export function Toaster() {

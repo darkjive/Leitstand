@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bot, Send, Trash2 } from 'lucide-react';
+import { Bot, Send, Trash2, AlertTriangle } from 'lucide-react';
 import { getSetting, useSetting } from '../lib/settings';
 import { apiFetch } from '../lib/api';
 
@@ -81,7 +81,7 @@ export function ChatBot() {
     if (ollamaStatus === 'unavailable') {
       const errorMsg: Message = {
         role: 'assistant',
-        content: '❌ Ollama is not running. Start it with: ollama serve',
+        content: 'Ollama is not running. Start it with: ollama serve',
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMsg]);
@@ -92,7 +92,7 @@ export function ChatBot() {
     if (!selectedModel || !availableModels.includes(selectedModel)) {
       const errorMsg: Message = {
         role: 'assistant',
-        content: `❌ No model selected.\n\nAvailable models: ${
+        content: `No model selected.\n\nAvailable models: ${
           availableModels.length > 0 ? availableModels.join(', ') : 'None'
         }`,
         timestamp: new Date(),
@@ -151,7 +151,7 @@ export function ChatBot() {
       console.error('Chat error:', error);
       const errorMessage: Message = {
         role: 'assistant',
-        content: `❌ Error: ${error instanceof Error ? error.message : 'Failed to get response'}`,
+        content: `Error: ${error instanceof Error ? error.message : 'Failed to get response'}`,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -174,10 +174,10 @@ export function ChatBot() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-cyber-border">
+      <div className="flex items-center justify-between mb-4 pb-3 border-b border-line">
         <div className="flex items-center gap-2">
-          <Bot className="w-5 h-5 text-cyber-cyan" />
-          <h3 className="text-lg font-bold cyber-glow">AI CHATBOT</h3>
+          <Bot className="w-5 h-5 text-accent" />
+          <h3 className="text-lg font-bold">AI CHATBOT</h3>
           {ollamaStatus === 'checking' && (
             <span className="text-xs bg-yellow-900/30 border border-yellow-500/50 text-yellow-300 px-2 py-1 rounded font-mono">
               CHECKING...
@@ -196,7 +196,7 @@ export function ChatBot() {
         </div>
         <button
           onClick={clearChat}
-          className="p-2 hover:bg-cyber-cyan/10 rounded transition-all"
+          className="p-2 hover:bg-accent/10 rounded transition-all"
           title="Clear Chat"
         >
           <Trash2 className="w-4 h-4 text-gray-400" />
@@ -209,7 +209,7 @@ export function ChatBot() {
         <select
           value={selectedModel}
           onChange={e => setSelectedModel(e.target.value)}
-          className="w-full bg-cyber-darkbg border border-cyber-border rounded px-3 py-2 text-sm text-cyber-cyan font-mono focus:border-cyber-cyan focus:outline-none"
+          className="w-full bg-bg border border-line rounded px-3 py-2 text-sm text-accent font-mono focus:border-accent focus:outline-none"
           disabled={ollamaStatus !== 'available' || availableModels.length === 0}
         >
           {availableModels.length === 0 && (
@@ -217,13 +217,14 @@ export function ChatBot() {
           )}
           {availableModels.map(name => (
             <option key={name} value={name}>
-              🏠 {name}
+              {name}
             </option>
           ))}
         </select>
         {ollamaStatus === 'available' && availableModels.length === 0 && (
           <div className="mt-2 text-xs text-yellow-400 bg-yellow-900/20 border border-yellow-500/30 rounded px-2 py-1">
-            ⚠️ No chat-capable models found. Install one with e.g.{' '}
+            <AlertTriangle size={12} className="inline mr-1" />
+            No chat-capable models found. Install one with e.g.{' '}
             <code className="font-mono">ollama pull qwen3:8b</code>
           </div>
         )}
@@ -241,14 +242,14 @@ export function ChatBot() {
               key={idx}
               className={`p-3 rounded-lg select-text ${
                 msg.role === 'user'
-                  ? 'bg-cyber-cyan/10 border border-cyber-cyan/30 ml-8'
-                  : 'bg-cyber-darkbg border border-cyber-border mr-8'
+                  ? 'bg-accent/10 border border-accent/30 ml-8'
+                  : 'bg-bg border border-line mr-8'
               }`}
             >
               <div className="flex items-start gap-2">
                 <div
                   className={`text-xs font-bold ${
-                    msg.role === 'user' ? 'text-cyber-cyan' : 'text-cyber-orange'
+                    msg.role === 'user' ? 'text-accent' : 'text-accent-bright'
                   }`}
                 >
                   {msg.role === 'user' ? 'YOU' : 'AI'}
@@ -260,7 +261,7 @@ export function ChatBot() {
           ))
         )}
         {loading && (
-          <div className="text-center text-cyber-cyan text-sm">
+          <div className="text-center text-accent text-sm">
             AI is thinking<span className="blink-cursor"></span>
           </div>
         )}
@@ -275,13 +276,13 @@ export function ChatBot() {
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type your message..."
-          className="flex-1 bg-cyber-darkbg border border-cyber-border rounded px-3 py-2 text-sm focus:border-cyber-cyan focus:outline-none"
+          className="flex-1 bg-bg border border-line rounded px-3 py-2 text-sm focus:border-accent focus:outline-none"
           disabled={loading}
         />
         <button
           onClick={sendMessage}
           disabled={loading || !input.trim()}
-          className="cyber-button px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="ls-button px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Send className="w-4 h-4" />
         </button>

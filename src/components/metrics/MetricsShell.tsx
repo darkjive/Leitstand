@@ -1,3 +1,4 @@
+import { AlertTriangle } from 'lucide-react';
 import type { ReactNode } from 'react';
 import type { MetricsData } from '../../../shared/types';
 import { useMetrics } from '../../lib/metricsStore';
@@ -15,7 +16,7 @@ export function MetricsShell({ title, icon, children }: MetricsShellProps) {
     <div className="space-y-3 h-full flex flex-col">
       <div className="flex items-center gap-2">
         {icon}
-        <h3 className="text-base font-bold cyber-glow">{title}</h3>
+        <h3 className="text-base font-bold">{title}</h3>
         <div
           className={`w-2 h-2 rounded-full ml-auto ${
             status === 'connected'
@@ -42,13 +43,14 @@ export function MetricsShell({ title, icon, children }: MetricsShellProps) {
 
       <div className="flex-1">
         {loading ? (
-          <div className="text-cyber-cyan text-sm">
+          <div className="text-accent text-sm">
             CONNECTING
             <span className="blink-cursor" />
           </div>
         ) : error ? (
           <div className="text-red-500 text-sm">
-            ⚠️ {error}
+            <AlertTriangle size={14} className="inline mr-1" />
+            {error}
             {status !== 'connected' && (
               <div className="text-xs text-gray-500 mt-1">Attempting to reconnect…</div>
             )}
