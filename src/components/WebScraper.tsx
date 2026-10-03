@@ -94,7 +94,7 @@ export function WebScraper() {
           <button
             onClick={scrapeUrl}
             disabled={loading || !url}
-            className="ls-button px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="ds-btn primary"
           >
             {loading ? (
               <>
@@ -180,14 +180,14 @@ export function WebScraper() {
             <div className="flex gap-2">
               <button
                 onClick={downloadMarkdown}
-                className="flex-1 px-3 py-2 bg-accent text-bg rounded font-bold text-xs hover:bg-cyan-400 transition-all flex items-center justify-center gap-2"
+                className="ds-btn primary flex-1"
               >
                 <Download className="w-4 h-4" />
                 Download Markdown
               </button>
               <button
                 onClick={downloadJson}
-                className="flex-1 px-3 py-2 bg-bg border border-line rounded font-bold text-xs hover:border-accent text-gray-300 transition-all flex items-center justify-center gap-2"
+                className="ds-btn flex-1"
               >
                 <FileText className="w-4 h-4" />
                 Download JSON

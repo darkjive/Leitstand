@@ -265,7 +265,7 @@ export function NpmScriptRunner() {
           </select>
           <button
             onClick={() => setShowAddProject(!showAddProject)}
-            className="ls-button p-1"
+            className="ds-btn sm icon"
             title="Add project"
           >
             <Plus className="w-4 h-4" />
@@ -292,7 +292,7 @@ export function NpmScriptRunner() {
             <div className="flex gap-2">
               <button
                 onClick={addProject}
-                className="flex-1 bg-accent text-black px-2 py-1 rounded text-xs font-bold hover:bg-accent-bright"
+                className="ds-btn primary sm flex-1"
               >
                 Add
               </button>
@@ -344,7 +344,7 @@ export function NpmScriptRunner() {
         <button
           onClick={() => fetchScripts()}
           disabled={loading}
-          className="ls-button flex items-center gap-2 text-sm"
+          className="ds-btn"
           title="Refresh scripts"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -393,14 +393,14 @@ export function NpmScriptRunner() {
                             setSelectedScript(name);
                             setShowOutput(true);
                           }}
-                          className="ls-button p-2"
+                          className="ds-btn icon"
                           title="View output"
                         >
                           <Terminal className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => stopScript(name)}
-                          className="bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 transition-all"
+                          className="ds-btn danger"
                           title="Stop script"
                         >
                           <Square className="w-4 h-4" />
@@ -409,7 +409,7 @@ export function NpmScriptRunner() {
                     ) : (
                       <button
                         onClick={() => runScript(name)}
-                        className="bg-accent text-bg px-3 py-2 rounded hover:bg-accent-bright transition-all flex items-center gap-2"
+                        className="ds-btn primary"
                         title="Run script"
                       >
                         <Play className="w-4 h-4" />
@@ -453,13 +453,13 @@ export function NpmScriptRunner() {
               {runningScripts.has(selectedScript) && (
                 <button
                   onClick={() => stopScript(selectedScript)}
-                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 flex items-center gap-2"
+                  className="ds-btn danger"
                 >
                   <Square className="w-4 h-4" />
                   Stop Script
                 </button>
               )}
-              <button onClick={() => setShowOutput(false)} className="ls-button px-4 py-2">
+              <button onClick={() => setShowOutput(false)} className="ds-btn">
                 Close
               </button>
             </div>

@@ -44,7 +44,7 @@ export function DockerWidget() {
         <div className="text-red-400 text-sm">{error || 'Failed to load Docker info'}</div>
         <button
           onClick={fetchDockerInfo}
-          className="mt-4 px-4 py-2 bg-elevated border border-accent text-accent rounded hover:bg-accent/10 transition-colors text-sm"
+          className="ds-btn mt-4"
         >
           Retry
         </button>

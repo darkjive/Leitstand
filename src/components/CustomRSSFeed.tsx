@@ -55,7 +55,7 @@ export function CustomRSSFeed() {
         <h3 className="text-lg font-bold">CUSTOM RSS</h3>
         <button
           onClick={() => setIsEditing(!isEditing)}
-          className="ml-auto p-1.5 rounded bg-bg border border-line hover:border-accent transition-all"
+          className="ds-btn icon ml-auto"
           title={isEditing ? 'Done editing' : 'Manage feeds'}
         >
           {isEditing ? <Save className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
@@ -84,7 +84,7 @@ export function CustomRSSFeed() {
             />
             <button
               onClick={addFeed}
-              className="px-3 py-1 bg-green-900/30 text-green-400 border border-green-500/50 rounded hover:bg-green-900/50 transition-all"
+              className="ds-btn icon"
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -100,7 +100,7 @@ export function CustomRSSFeed() {
                 <span className="flex-1 text-xs text-gray-300 truncate">{feed.name}</span>
                 <button
                   onClick={() => removeFeed(feed.id)}
-                  className="p-1 text-red-400 hover:bg-red-900/30 rounded transition-all"
+                  className="ds-btn danger sm icon"
                 >
                   <Trash2 className="w-3 h-3" />
                 </button>

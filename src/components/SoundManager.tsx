@@ -63,7 +63,7 @@ export function SoundManager() {
 
       <button
         onClick={toggleSound}
-        className="p-2 hover:bg-accent/10 rounded transition-all"
+        className="ds-btn ghost icon"
         title={soundEnabled ? 'Mute Ambiance' : 'Play Ambiance'}
       >
         {soundEnabled ? (

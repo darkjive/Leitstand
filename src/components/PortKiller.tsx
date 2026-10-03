@@ -84,7 +84,7 @@ export function PortKiller() {
         <button
           onClick={fetchPorts}
           disabled={loading}
-          className="ls-button flex items-center gap-2 text-sm"
+          className="ds-btn"
           title="Refresh ports"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -128,11 +128,7 @@ export function PortKiller() {
                 <button
                   onClick={() => killPort(portInfo.port)}
                   disabled={killing === portInfo.port}
-                  className={`flex-shrink-0 px-3 py-2 rounded font-bold text-sm transition-all ${
-                    killing === portInfo.port
-                      ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                      : 'bg-red-600 text-white hover:bg-red-700 hover:scale-105'
-                  }`}
+                  className="ds-btn danger shrink-0"
                   title={`Kill process on port ${portInfo.port}`}
                 >
                   {killing === portInfo.port ? (

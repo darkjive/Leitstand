@@ -66,19 +66,6 @@ body {
   border-color: var(--color-line-strong);
 }
 
-.ls-button {
-  background-color: var(--color-accent);
-  color: var(--color-bg);
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-sm);
-  font-weight: 600;
-  transition: background-color 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.ls-button:hover {
-  background-color: var(--color-accent-bright);
-}
-
 .terminal-window {
   background: var(--color-bg-sidebar);
   border: 1px solid var(--color-line);
@@ -193,8 +180,6 @@ body {
 
 /* Drag Handle */
 .drag-handle {
-  background: linear-gradient(135deg, rgba(10, 14, 39, 0.95) 0%, rgba(21, 26, 46, 0.95) 100%);
-  backdrop-filter: blur(8px);
   cursor: grab !important;
   user-select: none;
   -webkit-user-select: none;

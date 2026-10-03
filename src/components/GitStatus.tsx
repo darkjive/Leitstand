@@ -393,7 +393,7 @@ export function GitStatus() {
           />
           <button
             onClick={addRoot}
-            className="w-full bg-accent text-black px-3 py-2 rounded text-xs font-bold hover:bg-accent-bright transition-colors"
+            className="ds-btn primary block"
           >
             Add Root & Scan
           </button>
@@ -415,7 +415,7 @@ export function GitStatus() {
             <span className="text-xs text-gray-600">·</span>
             <span className="text-xs text-gray-500">{timeAgo(lastScan)}</span>
           </div>
-          <button onClick={scan} disabled={scanning} className="ls-button p-1" title="Rescan">
+          <button onClick={scan} disabled={scanning} className="ds-btn sm icon" title="Rescan">
             <RefreshCw className={`w-3.5 h-3.5 ${scanning ? 'animate-spin' : ''}`} />
           </button>
         </div>
@@ -459,7 +459,7 @@ export function GitStatus() {
             />
             <button
               onClick={addRoot}
-              className="bg-accent text-black px-3 py-1 rounded text-xs font-bold"
+              className="ds-btn primary sm"
             >
               Add
             </button>
@@ -526,7 +526,7 @@ export function GitStatus() {
           <button
             onClick={() => openConfirm('fetch')}
             disabled={bulkLoading !== null}
-            className="ls-button flex items-center justify-center gap-1 text-xs py-1"
+            className="ds-btn sm"
             title="Fetch all filtered (git fetch --all --prune)"
           >
             {bulkLoading === 'fetch' ? (
@@ -539,7 +539,7 @@ export function GitStatus() {
           <button
             onClick={() => openConfirm('pull')}
             disabled={bulkLoading !== null}
-            className="ls-button flex items-center justify-center gap-1 text-xs py-1"
+            className="ds-btn sm"
             title="Pull all filtered"
           >
             {bulkLoading === 'pull' ? (
@@ -552,7 +552,7 @@ export function GitStatus() {
           <button
             onClick={() => openConfirm('push')}
             disabled={bulkLoading !== null}
-            className="ls-button flex items-center justify-center gap-1 text-xs py-1"
+            className="ds-btn sm"
             title="Push all filtered"
           >
             {bulkLoading === 'push' ? (
@@ -565,7 +565,7 @@ export function GitStatus() {
           <button
             onClick={() => setBulkCommitOpen(true)}
             disabled={bulkLoading !== null}
-            className="ls-button flex items-center justify-center gap-1 text-xs py-1"
+            className="ds-btn sm"
             title="Commit all dirty repos with one message"
           >
             {bulkLoading === 'commit' ? (
@@ -664,7 +664,7 @@ export function GitStatus() {
                     <button
                       onClick={() => runRepoAction(repo.path, 'fetch')}
                       disabled={!!loading || !repo.hasUpstream}
-                      className="ls-button flex items-center justify-center gap-1 text-xs py-1 disabled:opacity-40"
+                      className="ds-btn sm"
                     >
                       {loading === 'fetch' ? (
                         <RefreshCw className="w-3 h-3 animate-spin" />
@@ -676,7 +676,7 @@ export function GitStatus() {
                     <button
                       onClick={() => runRepoAction(repo.path, 'pull')}
                       disabled={!!loading || !repo.hasUpstream}
-                      className="ls-button flex items-center justify-center gap-1 text-xs py-1 disabled:opacity-40"
+                      className="ds-btn sm"
                     >
                       {loading === 'pull' ? (
                         <RefreshCw className="w-3 h-3 animate-spin" />
@@ -688,7 +688,7 @@ export function GitStatus() {
                     <button
                       onClick={() => runRepoAction(repo.path, 'push')}
                       disabled={!!loading || !repo.hasUpstream}
-                      className="ls-button flex items-center justify-center gap-1 text-xs py-1 disabled:opacity-40"
+                      className="ds-btn sm"
                     >
                       {loading === 'push' ? (
                         <RefreshCw className="w-3 h-3 animate-spin" />
@@ -704,7 +704,7 @@ export function GitStatus() {
                     <button
                       onClick={() => setShowCommitInput(true)}
                       disabled={repo.changedFiles === 0}
-                      className="w-full ls-button flex items-center justify-center gap-1 text-xs py-1 disabled:opacity-40"
+                      className="ds-btn sm block"
                     >
                       <GitCommit className="w-3 h-3" />
                       Commit {repo.changedFiles > 0 ? `(${repo.changedFiles})` : ''}
@@ -730,7 +730,7 @@ export function GitStatus() {
                         <button
                           onClick={() => handleCommit(repo.path)}
                           disabled={loading === 'commit' || !commitMsg.trim()}
-                          className="flex-1 bg-accent text-black px-2 py-1 rounded text-xs font-bold disabled:opacity-50"
+                          className="ds-btn primary sm flex-1"
                         >
                           {loading === 'commit' ? 'Committing...' : 'Commit All'}
                         </button>
@@ -778,13 +778,13 @@ export function GitStatus() {
           <div className="flex gap-2 justify-end">
             <button
               onClick={() => setConfirm(null)}
-              className="px-3 py-1.5 bg-gray-700 text-gray-300 rounded text-xs"
+              className="ds-btn sm"
             >
               Cancel
             </button>
             <button
               onClick={() => runBulk(confirm.op, confirm.paths)}
-              className="px-3 py-1.5 bg-accent text-black rounded text-xs font-bold hover:bg-accent-bright"
+              className="ds-btn primary sm"
             >
               {bulkLoading === confirm.op ? 'Running...' : `Confirm ${confirm.op.toUpperCase()}`}
             </button>
@@ -809,14 +809,14 @@ export function GitStatus() {
           <div className="flex gap-2 justify-end">
             <button
               onClick={() => setBulkCommitOpen(false)}
-              className="px-3 py-1.5 bg-gray-700 text-gray-300 rounded text-xs"
+              className="ds-btn sm"
             >
               Cancel
             </button>
             <button
               onClick={runBulkCommit}
               disabled={!bulkCommitMsg.trim()}
-              className="px-3 py-1.5 bg-accent text-black rounded text-xs font-bold disabled:opacity-50"
+              className="ds-btn primary sm"
             >
               Commit All
             </button>

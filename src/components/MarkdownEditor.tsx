@@ -192,33 +192,21 @@ export function MarkdownEditor() {
           <div className="flex items-center gap-1">
             <button
               onClick={() => setViewMode('edit')}
-              className={`p-2 rounded transition-all ${
-                viewMode === 'edit'
-                  ? 'bg-accent/20 text-accent'
-                  : 'hover:bg-accent/10 text-gray-400'
-              }`}
+              className={`ds-btn ghost icon ${viewMode === 'edit' ? 'active' : ''}`}
               title="Edit Mode"
             >
               <Code className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('preview')}
-              className={`p-2 rounded transition-all ${
-                viewMode === 'preview'
-                  ? 'bg-accent/20 text-accent'
-                  : 'hover:bg-accent/10 text-gray-400'
-              }`}
+              className={`ds-btn ghost icon ${viewMode === 'preview' ? 'active' : ''}`}
               title="Preview Mode"
             >
               <Eye className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('split')}
-              className={`p-2 rounded transition-all ${
-                viewMode === 'split'
-                  ? 'bg-accent/20 text-accent'
-                  : 'hover:bg-accent/10 text-gray-400'
-              }`}
+              className={`ds-btn ghost icon ${viewMode === 'split' ? 'active' : ''}`}
               title="Split Mode"
             >
               <div className="flex gap-0.5">
@@ -229,21 +217,21 @@ export function MarkdownEditor() {
             <div className="w-px h-4 bg-line mx-1" />
             <button
               onClick={copyToClipboard}
-              className="p-2 hover:bg-accent/10 rounded transition-all"
+              className="ds-btn ghost icon"
               title="Copy to Clipboard"
             >
               <Copy className="w-4 h-4 text-gray-400" />
             </button>
             <button
               onClick={downloadMarkdown}
-              className="p-2 hover:bg-accent/10 rounded transition-all"
+              className="ds-btn ghost icon"
               title="Download"
             >
               <Download className="w-4 h-4 text-gray-400" />
             </button>
             <button
               onClick={clearContent}
-              className="p-2 hover:bg-red-500/10 rounded transition-all"
+              className="ds-btn ghost icon"
               title="Clear All"
             >
               <Trash2 className="w-4 h-4 text-red-400" />
@@ -256,7 +244,7 @@ export function MarkdownEditor() {
       {inputMode === 'plaintext' && plainText.trim() && (
         <button
           onClick={convertToMarkdown}
-          className="mb-3 w-full ls-button flex items-center justify-center gap-2 py-2"
+          className="ds-btn primary block mb-3"
         >
           <Wand2 className="w-4 h-4" />
           <span>CONVERT TO MARKDOWN</span>

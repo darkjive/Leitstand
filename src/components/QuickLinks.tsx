@@ -313,7 +313,7 @@ export function QuickLinks() {
       <div className="mb-4">
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="ls-button w-full flex items-center justify-center gap-2 text-sm"
+          className="ds-btn block"
         >
           {showAddForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
           {showAddForm ? 'Cancel' : 'Add Link'}
@@ -427,7 +427,7 @@ export function QuickLinks() {
             <button
               onClick={addLink}
               disabled={!formData.name || !formData.url}
-              className="w-full px-4 py-2 bg-accent text-black font-bold rounded hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              className="ds-btn primary block"
             >
               Add Link
             </button>
