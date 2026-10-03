@@ -36,6 +36,7 @@ import {
   getScriptOutput,
   stopScript,
   getRunningProcesses,
+  stopAllScripts,
 } from './services/npmScripts.js';
 import {
   startTailing,
@@ -109,8 +110,12 @@ const wss = new WebSocketServer({
     const origin = info.origin || info.req.headers.origin;
     if (!origin) return true; // non-browser clients (curl, health checks)
     try {
-      const { hostname } = new URL(origin);
-      return ['localhost', '127.0.0.1', '::1', '[::1]'].includes(hostname);
+      const { hostname, host } = new URL(origin);
+      if (['localhost', '127.0.0.1', '::1', '[::1]'].includes(hostname)) return true;
+      // LAN mode (token is mandatory there): accept the page's own origin. Never on
+      // loopback binds — the WS upgrade bypasses the Host guard, so a rebound
+      // evil.com origin would otherwise pass.
+      return !isLoopbackBind && host === info.req.headers.host;
     } catch {
       return false;
     }
@@ -145,6 +150,7 @@ app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
+        upgradeInsecureRequests: null, // server speaks plain HTTP (LAN mode would break)
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "'unsafe-inline'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
@@ -168,6 +174,18 @@ app.use(
     credentials: true,
   })
 );
+
+// CSRF guard: a cross-site page can fire "simple" POSTs (no preflight) at the
+// loopback server, and CORS only hides the response — the side effect (git push,
+// kill, npm run) still happens. A custom header forces a preflight, which the
+// CORS origin allowlist rejects. apiFetch() sets it on every request.
+app.use('/api', (req, res, next) => {
+  if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') return next();
+  if (req.get('X-Leitstand-Request') !== '1') {
+    return res.status(403).json({ error: 'Missing X-Leitstand-Request header' });
+  }
+  next();
+});
 
 // Single boundary for the whole API surface — new routes are covered by default
 // instead of needing to remember the guard. /health stays open so container and
@@ -356,7 +374,7 @@ const OLLAMA_GET_ENDPOINTS = new Set(['tags', 'ps', 'version']);
 const OLLAMA_POST_ENDPOINTS = new Set(['generate', 'chat', 'show']);
 
 // GET endpoint for Ollama (health checks, listing models)
-app.get('/api/ollama/api/:endpoint', ollamaLimiter, async (req, res) => {
+app.get('/api/ollama/api/:endpoint', generalLimiter, async (req, res) => {
   try {
     const endpoint = oneParam(req.params.endpoint);
     if (!OLLAMA_GET_ENDPOINTS.has(endpoint)) {
@@ -992,11 +1010,13 @@ server.listen(PORT, HOST, () => {
 process.on('SIGTERM', () => {
   console.log('SIGTERM received, cleaning up...');
   stopAllTailing();
+  stopAllScripts();
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
   console.log('\nSIGINT received, cleaning up...');
   stopAllTailing();
+  stopAllScripts();
   process.exit(0);
 });
