@@ -9,7 +9,7 @@
     "type": "git",
     "url": "git+https://github.com/darkjive/Leitstand.git"
   },
-  "description": "Futuristic homelab control center with real-time system monitoring, AI agent terminals, and cyberpunk aesthetics",
+  "description": "Futuristic dev control center with real-time system monitoring, AI agent terminals, and cyberpunk aesthetics",
   "main": "electron/main.cjs",
   "engines": {
     "node": ">=22"

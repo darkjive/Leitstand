@@ -1,6 +1,6 @@
 # 🚀 Leitstand
 
-**Homelab Control Center** — futuristisches Dashboard mit Live-Systemmonitoring und Cyberpunk-Optik.
+**Dev Control** — futuristisches Dashboard mit Live-Systemmonitoring und Cyberpunk-Optik.
 
 <p align="center">
   <img src="https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
@@ -11,7 +11,7 @@
 
 > **Futuristic homelab dashboard with real-time system monitoring and cyberpunk aesthetics inspired by pxlngn.net**
 
-![Homelab Control Center dashboard](docs/screenshot.png)
+![Dev Control dashboard](docs/screenshot.png)
 
 ## ✨ Features
 
