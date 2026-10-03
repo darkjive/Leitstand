@@ -68,9 +68,16 @@ function parseUFWLogLine(line: string): UFWLogEntry | null {
 
   const action = ufwMatch[1] as 'BLOCK' | 'ALLOW';
 
-  // Extract timestamp (assuming standard syslog format)
-  const timestampMatch = line.match(/^(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})/);
-  const timestamp = timestampMatch ? new Date(timestampMatch[1]) : new Date();
+  // Extract timestamp: ISO (journalctl -o short-iso) or classic syslog (no year → current year)
+  const isoMatch = line.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:?\d{2})/);
+  const sysMatch = line.match(/^(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})/);
+  let timestamp = new Date();
+  if (isoMatch) {
+    timestamp = new Date(isoMatch[1]);
+  } else if (sysMatch) {
+    const parsed = new Date(`${sysMatch[1]} ${new Date().getFullYear()}`);
+    if (!Number.isNaN(parsed.getTime())) timestamp = parsed;
+  }
 
   // Extract network details
   const srcMatch = line.match(/SRC=([\d.]+)/);
@@ -114,7 +121,7 @@ export async function getUFWLogs(limit = 100): Promise<UFWLogEntry[]> {
       ),
     // systemd-journald: Arch/NixOS/Fedora store kernel logs only here.
     () =>
-      execAsync(`journalctl -k --no-pager -n ${safeLimit * 5} 2>/dev/null | grep -i UFW`).then(
+      execAsync(`journalctl -k -o short-iso --no-pager -n ${safeLimit * 5} 2>/dev/null | grep -i UFW`).then(
         r => r.stdout
       ),
   ];
@@ -230,7 +237,9 @@ export async function getUFWStatus(): Promise<UFWStatus> {
 export async function getTopAttackers(limit = 10): Promise<AttackerStats[]> {
   try {
     const logs = await getUFWLogs(1000); // Analyze last 1000 entries
-    const blockedLogs = logs.filter(log => log.action === 'BLOCK');
+    // Multicast-Ziele (224.0.0.0/4, z.B. Router-IGMP an 224.0.0.1) sind keine Angriffe
+    const isMulticast = (ip: string) => /^(22[4-9]|23\d)\./.test(ip);
+    const blockedLogs = logs.filter(log => log.action === 'BLOCK' && !isMulticast(log.dstIp));
 
     // Aggregate by source IP
     const attackerMap = new Map<string, { count: number; lastSeen: Date; ports: Set<number> }>();
