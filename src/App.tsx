@@ -47,6 +47,7 @@ import {
   HardDrive,
   Link,
   MemoryStick,
+  Move,
   Package,
   Radio,
   Rss,
@@ -454,7 +455,7 @@ function App() {
               <div className="w-px h-6 bg-line" />
               <button
                 onClick={() => setShowWidgetControls(!showWidgetControls)}
-                className="ls-button flex items-center gap-2 text-sm"
+                className="ds-btn"
                 title="Toggle Widgets"
               >
                 {showWidgetControls ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -462,7 +463,7 @@ function App() {
               </button>
               <button
                 onClick={() => setShowSettings(!showSettings)}
-                className={`ls-button flex items-center gap-2 text-sm ${showSettings ? 'bg-accent/20' : ''}`}
+                className={`ds-btn ${showSettings ? 'active' : ''}`}
                 title="Settings"
               >
                 <Settings className="w-4 h-4" />
@@ -470,7 +471,7 @@ function App() {
               </button>
               <button
                 onClick={manualSave}
-                className={`ls-button flex items-center gap-2 text-sm ${showSaved ? 'bg-green-500' : ''}`}
+                className={`ds-btn ${showSaved ? 'text-good' : ''}`}
                 title="Save Layout"
               >
                 <Save className="w-4 h-4" />
@@ -478,7 +479,7 @@ function App() {
               </button>
               <button
                 onClick={resetLayout}
-                className="ls-button flex items-center gap-2 text-sm"
+                className="ds-btn"
                 title="Reset Layout to Default"
               >
                 <RotateCcw className="w-4 h-4" />
@@ -577,10 +578,11 @@ function App() {
                 className={isDragging ? 'dragging' : ''}
                 style={{ pointerEvents: 'auto' }}
               >
-                <div className="drag-handle cursor-move p-2 border-b border-line hover:bg-accent/10 select-none">
+                <div className="drag-handle group cursor-move p-2 border-b border-line hover:bg-accent/10 select-none">
                   <div className="text-xs font-bold text-gray-400 flex items-center gap-1.5">
                     <config.icon size={12} />
                     {config.name}
+                    <Move size={12} className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                 </div>
                 <div

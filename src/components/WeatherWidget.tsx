@@ -82,7 +82,7 @@ export function WeatherWidget({ location: initialLocation = 'Munich' }: { locati
               />
               <button
                 onClick={saveLocation}
-                className="px-2 py-1 bg-accent text-black text-xs rounded hover:bg-accent-bright transition-colors"
+                className="ds-btn primary sm"
               >
                 Save
               </button>

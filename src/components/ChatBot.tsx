@@ -196,7 +196,7 @@ export function ChatBot() {
         </div>
         <button
           onClick={clearChat}
-          className="p-2 hover:bg-accent/10 rounded transition-all"
+          className="ds-btn ghost icon"
           title="Clear Chat"
         >
           <Trash2 className="w-4 h-4 text-gray-400" />
@@ -282,7 +282,7 @@ export function ChatBot() {
         <button
           onClick={sendMessage}
           disabled={loading || !input.trim()}
-          className="ls-button px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="ds-btn primary"
         >
           <Send className="w-4 h-4" />
         </button>

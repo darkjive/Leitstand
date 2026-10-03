@@ -255,15 +255,15 @@ export function LogAggregator() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setAutoScroll(!autoScroll)}
-            className={`ls-button p-2 ${autoScroll ? 'bg-green-600' : ''}`}
+            className={`ds-btn icon ${autoScroll ? 'active' : ''}`}
             title={autoScroll ? 'Auto-scroll ON' : 'Auto-scroll OFF'}
           >
             {autoScroll ? <PlayCircle className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
           </button>
-          <button onClick={downloadLogs} className="ls-button p-2" title="Download logs">
+          <button onClick={downloadLogs} className="ds-btn icon" title="Download logs">
             <Download className="w-4 h-4" />
           </button>
-          <button onClick={clearLogs} className="ls-button p-2" title="Clear logs">
+          <button onClick={clearLogs} className="ds-btn icon" title="Clear logs">
             <Trash2 className="w-4 h-4" />
           </button>
         </div>
@@ -293,14 +293,14 @@ export function LogAggregator() {
           <span className="text-xs font-bold text-gray-400">TAILING</span>
           <button
             onClick={() => setShowAddLog(!showAddLog)}
-            className="ls-button p-1"
+            className="ds-btn sm icon"
             title="Add log file"
           >
             <Plus className="w-3 h-3" />
           </button>
           <button
             onClick={openSuggestions}
-            className="ls-button p-1"
+            className="ds-btn sm icon"
             title="Pick from example paths"
           >
             <Sparkles className="w-3 h-3" />
@@ -327,7 +327,7 @@ export function LogAggregator() {
             <div className="flex gap-2">
               <button
                 onClick={addLog}
-                className="flex-1 bg-accent text-black px-2 py-1 rounded text-xs font-bold hover:bg-accent-bright"
+                className="ds-btn primary sm flex-1"
               >
                 Add & Start
               </button>
@@ -462,7 +462,7 @@ export function LogAggregator() {
               )}
             </div>
             <div className="p-4 border-t border-line flex justify-end">
-              <button onClick={() => setShowSuggestions(false)} className="ls-button px-4 py-2">
+              <button onClick={() => setShowSuggestions(false)} className="ds-btn">
                 Close
               </button>
             </div>

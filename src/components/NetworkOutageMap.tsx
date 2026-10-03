@@ -69,7 +69,7 @@ export function NetworkOutageMap() {
         </div>
         <button
           onClick={fetchConnectivity}
-          className="p-1.5 hover:bg-accent/10 rounded transition-all"
+          className="ds-btn ghost icon"
           title="Refresh"
         >
           <RefreshCw className="w-4 h-4 text-gray-400 hover:text-accent" />

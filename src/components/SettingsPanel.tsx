@@ -69,7 +69,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded hover:bg-accent/10 text-gray-400 hover:text-accent transition-all"
+            className="ds-btn ghost icon"
             title="Close (Esc)"
           >
             <X className="w-5 h-5" />
@@ -372,7 +372,7 @@ function ListEditor<T>({
           </div>
           <button
             onClick={() => remove(idx)}
-            className="p-1 text-red-400 hover:bg-red-900/30 rounded transition-all shrink-0"
+            className="ds-btn danger sm icon"
             title="Remove"
           >
             <Trash2 className="w-4 h-4" />
@@ -382,7 +382,7 @@ function ListEditor<T>({
 
       <button
         onClick={add}
-        className="flex items-center gap-1 px-3 py-2 text-xs font-mono bg-bg border border-accent/50 text-accent rounded hover:bg-accent/10 transition-all"
+        className="ds-btn sm"
       >
         <Plus className="w-3 h-3" />
         <span>{addLabel}</span>

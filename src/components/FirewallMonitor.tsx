@@ -151,7 +151,7 @@ export function FirewallMonitor() {
         <div className="text-red-400 text-sm">{error}</div>
         <button
           onClick={fetchAllData}
-          className="mt-4 px-4 py-2 bg-elevated border border-accent text-accent rounded hover:bg-accent/10 transition-colors text-sm"
+          className="ds-btn mt-4"
         >
           Retry
         </button>
@@ -180,7 +180,7 @@ export function FirewallMonitor() {
         </div>
         <button
           onClick={fetchAllData}
-          className="p-2 hover:bg-accent/10 rounded transition-colors"
+          className="ds-btn ghost icon"
           title="Refresh"
         >
           <RefreshCw className="w-4 h-4 text-accent" />
