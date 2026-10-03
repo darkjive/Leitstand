@@ -148,7 +148,7 @@ export function NpmScriptRunner() {
   const pollOutput = (processId: string) => {
     const interval = setInterval(async () => {
       try {
-        const res = await apiFetch(`/api/npm/output/${processId}`);
+        const res = await apiFetch(`/api/npm/output/${encodeURIComponent(processId)}`);
         const data: ScriptOutput = await res.json();
 
         setScriptOutput(data.output);

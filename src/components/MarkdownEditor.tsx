@@ -87,11 +87,27 @@ export function MarkdownEditor() {
   const renderMarkdown = (md: string) => {
     // Escape raw HTML first — the result goes into dangerouslySetInnerHTML,
     // so unescaped input (e.g. pasted <img onerror=…>) would execute.
+    // Placeholder control chars delimit link tags below; strip them from the input so
+    // pasted text cannot forge one.
     let html = md
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\u0001-\u0003]/g, '')
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
+
+    // Links first, as placeholders: the URL must not run through the bold/italic/code
+    // rules below (a '*' or backtick in it would inject markup into the href). Only
+    // http(s) targets become links; javascript:, data:, … stay plain text.
+    const linkOpenTags: string[] = [];
+    html = html.replace(/\[(.*?)\]\((.*?)\)/gim, (match, text: string, href: string) => {
+      if (!/^https?:\/\//i.test(href)) return match;
+      linkOpenTags.push(
+        `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-accent hover:text-accent-bright underline">`
+      );
+      return `\u0001${linkOpenTags.length - 1}\u0002${text}\u0003`;
+    });
 
     // Headers
     html = html.replace(
@@ -128,17 +144,16 @@ export function MarkdownEditor() {
       '<code class="bg-bg px-1 py-0.5 rounded text-sm font-mono text-green-300">$1</code>'
     );
 
-    // Links — only http(s) targets; anything else (javascript:, data:, …)
-    // renders as plain text instead of a clickable link
-    html = html.replace(/\[(.*?)\]\((.*?)\)/gim, (match, text: string, href: string) =>
-      /^https?:\/\//i.test(href)
-        ? `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-accent hover:text-accent-bright underline">${text}</a>`
-        : match
-    );
-
     // Lists
     html = html.replace(/^\* (.*$)/gim, '<li class="ml-4">• $1</li>');
     html = html.replace(/^- (.*$)/gim, '<li class="ml-4">• $1</li>');
+
+    // Restore link tags
+    html = html
+      // eslint-disable-next-line no-control-regex
+      .replace(/\u0001(\d+)\u0002/g, (_m, i: string) => linkOpenTags[Number(i)])
+      // eslint-disable-next-line no-control-regex
+      .replace(/\u0003/g, '</a>');
 
     // Line breaks
     html = html.replace(/\n/gim, '<br />');
@@ -159,9 +174,7 @@ export function MarkdownEditor() {
             <button
               onClick={() => setInputMode('markdown')}
               className={`px-2 py-1 rounded text-xs transition-all ${
-                inputMode === 'markdown'
-                  ? 'bg-accent text-bg'
-                  : 'text-gray-400 hover:text-accent'
+                inputMode === 'markdown' ? 'bg-accent text-bg' : 'text-gray-400 hover:text-accent'
               }`}
             >
               MD
@@ -169,9 +182,7 @@ export function MarkdownEditor() {
             <button
               onClick={() => setInputMode('plaintext')}
               className={`px-2 py-1 rounded text-xs transition-all ${
-                inputMode === 'plaintext'
-                  ? 'bg-accent text-bg'
-                  : 'text-gray-400 hover:text-accent'
+                inputMode === 'plaintext' ? 'bg-accent text-bg' : 'text-gray-400 hover:text-accent'
               }`}
             >
               TEXT
