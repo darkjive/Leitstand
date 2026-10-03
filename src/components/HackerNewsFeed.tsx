@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Flame, ExternalLink, TrendingUp } from 'lucide-react';
+import { Flame, ExternalLink, TrendingUp, MessageSquare } from 'lucide-react';
 
 interface HNStory {
   id: number;
@@ -68,7 +68,7 @@ export function HackerNewsFeed() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-cyber-orange">
+        <div className="text-accent-bright">
           FETCHING HACKER NEWS<span className="blink-cursor"></span>
         </div>
       </div>
@@ -77,12 +77,12 @@ export function HackerNewsFeed() {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-cyber-border">
+      <div className="flex items-center justify-between mb-4 pb-3 border-b border-line">
         <div className="flex items-center gap-2">
-          <Flame className="w-5 h-5 text-cyber-orange" />
-          <h3 className="text-lg font-bold text-cyber-orange">HACKER NEWS</h3>
+          <Flame className="w-5 h-5 text-accent-bright" />
+          <h3 className="text-lg font-bold text-accent-bright">HACKER NEWS</h3>
         </div>
-        <TrendingUp className="w-4 h-4 text-cyber-orange" />
+        <TrendingUp className="w-4 h-4 text-accent-bright" />
       </div>
 
       {/* Filter */}
@@ -93,8 +93,8 @@ export function HackerNewsFeed() {
             onClick={() => setFilter(f)}
             className={`px-3 py-1 rounded text-xs font-bold transition-all ${
               filter === f
-                ? 'bg-cyber-orange text-cyber-darkbg'
-                : 'bg-cyber-darkbg border border-cyber-border text-gray-400 hover:border-cyber-orange'
+                ? 'bg-accent-bright text-bg'
+                : 'bg-bg border border-line text-gray-400 hover:border-accent-bright'
             }`}
           >
             {f.toUpperCase()}
@@ -113,20 +113,25 @@ export function HackerNewsFeed() {
               href={story.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block p-3 bg-cyber-darkbg rounded border border-cyber-border hover:border-cyber-orange transition-all group"
+              className="block p-3 bg-bg rounded border border-line hover:border-accent-bright transition-all group"
             >
               <div className="flex items-start gap-2 mb-2">
                 <div className="flex-1">
-                  <h4 className="text-sm font-medium group-hover:text-cyber-orange line-clamp-2">
+                  <h4 className="text-sm font-medium group-hover:text-accent-bright line-clamp-2">
                     {story.title}
                   </h4>
                 </div>
-                <ExternalLink className="w-3 h-3 text-gray-500 group-hover:text-cyber-orange flex-shrink-0" />
+                <ExternalLink className="w-3 h-3 text-gray-500 group-hover:text-accent-bright flex-shrink-0" />
               </div>
               <div className="flex items-center gap-4 text-xs text-gray-500">
-                <span className="text-cyber-orange font-bold">▲ {story.score}</span>
+                <span className="text-accent-bright font-bold">▲ {story.score}</span>
                 <span>{story.by}</span>
-                {story.descendants > 0 && <span>💬 {story.descendants}</span>}
+                {story.descendants > 0 && (
+                  <span className="inline-flex items-center gap-1">
+                    <MessageSquare size={12} />
+                    {story.descendants}
+                  </span>
+                )}
               </div>
             </a>
           ))

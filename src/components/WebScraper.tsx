@@ -74,8 +74,8 @@ export function WebScraper() {
   return (
     <div className="h-full flex flex-col">
       <div className="flex items-center gap-2 mb-4">
-        <Globe className="w-5 h-5 text-cyber-cyan" />
-        <h3 className="text-lg font-bold cyber-glow">WEB SCRAPER v2</h3>
+        <Globe className="w-5 h-5 text-accent" />
+        <h3 className="text-lg font-bold">WEB SCRAPER v2</h3>
         <span className="text-xs text-gray-500 ml-auto">Playwright + Markdown</span>
       </div>
 
@@ -88,13 +88,13 @@ export function WebScraper() {
             onChange={e => setUrl(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !loading && url && scrapeUrl()}
             placeholder="https://example.com"
-            className="flex-1 bg-cyber-darkbg border border-cyber-border rounded px-3 py-2 text-sm focus:border-cyber-cyan focus:outline-none"
+            className="flex-1 bg-bg border border-line rounded px-3 py-2 text-sm focus:border-accent focus:outline-none"
             disabled={loading}
           />
           <button
             onClick={scrapeUrl}
             disabled={loading || !url}
-            className="cyber-button px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="ls-button px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {loading ? (
               <>
@@ -108,7 +108,7 @@ export function WebScraper() {
         </div>
 
         {/* Depth Control */}
-        <div className="flex items-center gap-3 bg-cyber-darkbg border border-cyber-border rounded p-3">
+        <div className="flex items-center gap-3 bg-bg border border-line rounded p-3">
           <label className="text-xs text-gray-400 font-bold">CRAWL DEPTH:</label>
           <input
             type="range"
@@ -120,7 +120,7 @@ export function WebScraper() {
             disabled={loading}
           />
           <div className="text-right min-w-[120px]">
-            <div className="text-sm font-bold text-cyber-cyan">
+            <div className="text-sm font-bold text-accent">
               {depth} level{depth > 1 ? 's' : ''}
             </div>
             <div className="text-xs text-gray-500">
@@ -147,10 +147,10 @@ export function WebScraper() {
       {data && (
         <>
           {/* Metadata Card */}
-          <div className="mb-3 p-3 bg-cyber-darkbg rounded border border-cyber-border">
+          <div className="mb-3 p-3 bg-bg rounded border border-line">
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1">
-                <div className="text-sm font-bold text-cyber-cyan mb-1">{data.title}</div>
+                <div className="text-sm font-bold text-accent mb-1">{data.title}</div>
                 <div className="text-xs text-gray-400 break-all flex items-center gap-1">
                   <LinkIcon className="w-3 h-3" />
                   {data.url}
@@ -159,19 +159,19 @@ export function WebScraper() {
             </div>
 
             <div className="grid grid-cols-3 gap-2 mb-3">
-              <div className="bg-cyber-bg rounded p-2">
+              <div className="bg-bg-sidebar rounded p-2">
                 <div className="text-xs text-gray-500">Pages Scraped</div>
-                <div className="text-lg font-bold text-cyber-cyan">
+                <div className="text-lg font-bold text-accent">
                   {data.metadata.pagesScraped}
                 </div>
               </div>
-              <div className="bg-cyber-bg rounded p-2">
+              <div className="bg-bg-sidebar rounded p-2">
                 <div className="text-xs text-gray-500">Depth Level</div>
-                <div className="text-lg font-bold text-cyber-cyan">{data.metadata.depth}</div>
+                <div className="text-lg font-bold text-accent">{data.metadata.depth}</div>
               </div>
-              <div className="bg-cyber-bg rounded p-2">
+              <div className="bg-bg-sidebar rounded p-2">
                 <div className="text-xs text-gray-500">Content Size</div>
-                <div className="text-lg font-bold text-cyber-cyan">
+                <div className="text-lg font-bold text-accent">
                   {(data.markdown.length / 1024).toFixed(1)}kb
                 </div>
               </div>
@@ -180,14 +180,14 @@ export function WebScraper() {
             <div className="flex gap-2">
               <button
                 onClick={downloadMarkdown}
-                className="flex-1 px-3 py-2 bg-cyber-cyan text-cyber-darkbg rounded font-bold text-xs hover:bg-cyan-400 transition-all flex items-center justify-center gap-2"
+                className="flex-1 px-3 py-2 bg-accent text-bg rounded font-bold text-xs hover:bg-cyan-400 transition-all flex items-center justify-center gap-2"
               >
                 <Download className="w-4 h-4" />
                 Download Markdown
               </button>
               <button
                 onClick={downloadJson}
-                className="flex-1 px-3 py-2 bg-cyber-darkbg border border-cyber-border rounded font-bold text-xs hover:border-cyber-cyan text-gray-300 transition-all flex items-center justify-center gap-2"
+                className="flex-1 px-3 py-2 bg-bg border border-line rounded font-bold text-xs hover:border-accent text-gray-300 transition-all flex items-center justify-center gap-2"
               >
                 <FileText className="w-4 h-4" />
                 Download JSON
@@ -200,9 +200,9 @@ export function WebScraper() {
           </div>
 
           {/* Content Preview */}
-          <div className="flex-1 overflow-auto bg-cyber-darkbg rounded border border-cyber-border min-h-0">
-            <div className="sticky top-0 bg-cyber-bg border-b border-cyber-border px-3 py-2 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-cyber-cyan" />
+          <div className="flex-1 overflow-auto bg-bg rounded border border-line min-h-0">
+            <div className="sticky top-0 bg-bg-sidebar border-b border-line px-3 py-2 flex items-center gap-2">
+              <FileText className="w-4 h-4 text-accent" />
               <span className="text-xs font-bold text-gray-400">MARKDOWN PREVIEW</span>
             </div>
             <div className="p-4">
@@ -221,7 +221,7 @@ export function WebScraper() {
             <div className="font-bold mb-1">Professional Web Scraper</div>
             <div className="text-xs text-gray-600">Powered by Playwright + Cheerio + Turndown</div>
           </div>
-          <div className="text-xs bg-cyber-darkbg border border-cyber-border rounded px-3 py-2 max-w-md">
+          <div className="text-xs bg-bg border border-line rounded px-3 py-2 max-w-md">
             Enter a URL, set crawl depth, and extract clean Markdown content
           </div>
         </div>

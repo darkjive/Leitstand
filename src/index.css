@@ -1,36 +1,50 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
 @import 'tailwindcss';
 
-/* Tailwind CSS 4 Theme Configuration */
-@theme {
-  /* Custom Colors - Cyberpunk Palette */
-  --color-cyber-cyan: rgb(0 195 255);
-  --color-cyber-orange: rgb(255 135 0);
-  --color-cyber-darkbg: #0a0e27;
-  --color-cyber-cardbg: #151a2e;
-  --color-cyber-border: rgba(0 195 255 / 0.3);
-
-  /* Animations */
-  --animate-pulse-glow: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  --animate-blink: blink 1s step-end infinite;
-  --animate-slide-up: slide-up 0.5s ease-out;
-  --animate-typing: typing 3s steps(40) infinite;
-  --animate-color-shift: color-shift 3s ease-in-out infinite;
-
-  /* Font Family */
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/Satoshi-Variable.woff2') format('woff2-variations');
+  font-weight: 300 900;
+  font-display: swap;
 }
 
-@keyframes pulse-glow {
-  0%,
-  100% {
-    opacity: 1;
-    box-shadow: 0 0 20px rgba(0, 195, 255, 0.5);
-  }
-  50% {
-    opacity: 0.8;
-    box-shadow: 0 0 40px rgba(0, 195, 255, 0.8);
-  }
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/Satoshi-VariableItalic.woff2') format('woff2-variations');
+  font-weight: 300 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Design-Tokens identisch mit Vault/Jobschleuse (warmes Gold auf Blauschwarz) */
+@theme {
+  --color-bg: #0d1017;
+  --color-bg-sidebar: #080a0f;
+  --color-elevated: #161b22;
+  --color-hover: #1c232e;
+  --color-active: #232b38;
+
+  --color-accent: #d4a574;
+  --color-accent-bright: #e8b985;
+  --color-accent-dim: #8a6b4d;
+
+  --color-text: #e6e1d8;
+  --color-text-dim: #9a948a;
+  --color-text-muted: #5c5852;
+
+  --color-line: rgba(212, 165, 116, 0.1);
+  --color-line-strong: rgba(212, 165, 116, 0.2);
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+
+  --shadow-card: 0 4px 14px rgba(0, 0, 0, 0.4), 0 0 1px rgba(212, 165, 116, 0.08);
+
+  --animate-blink: blink 1s step-end infinite;
+  --animate-slide-up: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+
+  --font-sans: 'Satoshi', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'JetBrains Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
 }
 
 @keyframes blink {
@@ -47,7 +61,7 @@
 @keyframes slide-up {
   0% {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(12px);
   }
   100% {
     opacity: 1;
@@ -55,145 +69,74 @@
   }
 }
 
-@keyframes typing {
-  0% {
-    width: 0;
-  }
-  50% {
-    width: 100%;
-  }
-  100% {
-    width: 0;
-  }
-}
-
-@keyframes color-shift {
-  0%,
-  100% {
-    color: rgb(0, 195, 255);
-  }
-  50% {
-    color: rgb(255, 135, 0);
-  }
-}
-
-@keyframes scan-line {
-  0% {
-    transform: translateY(-100%);
-  }
-  100% {
-    transform: translateY(100vh);
-  }
-}
-
 @keyframes widget-pulse {
   0%,
   100% {
     opacity: 1;
-    box-shadow: 0 0 8px rgba(234, 179, 8, 0.6);
   }
   50% {
-    opacity: 0.5;
-    box-shadow: 0 0 16px rgba(234, 179, 8, 0.9);
+    opacity: 0.4;
   }
 }
 
 /* Base Styles */
 body {
-  background-color: var(--color-cyber-darkbg);
-  color: var(--color-cyber-cyan);
-  font-family: var(--font-mono);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
   margin: 0;
   min-height: 100vh;
-  background-image:
-    radial-gradient(circle at 20% 50%, rgba(0, 195, 255, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(255, 135, 0, 0.05) 0%, transparent 50%),
-    linear-gradient(rgba(0, 195, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 195, 255, 0.03) 1px, transparent 1px);
-  background-size:
-    100% 100%,
-    100% 100%,
-    50px 50px,
-    50px 50px;
-  background-position:
-    0 0,
-    0 0,
-    0 0,
-    0 0;
 }
 
 /* Component Classes */
-.cyber-card {
-  background-color: var(--color-cyber-cardbg);
-  border: 1px solid var(--color-cyber-border);
-  border-radius: 0.5rem;
+.ls-card {
+  background-color: var(--color-elevated);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
   padding: 1.5rem;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 0 20px rgba(0, 195, 255, 0.1);
-  transition: all 0.3s ease;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.24s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.cyber-card:hover {
-  border-color: var(--color-cyber-cyan);
-  box-shadow: 0 0 30px rgba(0, 195, 255, 0.3);
+.ls-card:hover {
+  border-color: var(--color-line-strong);
 }
 
-.cyber-glow {
-  text-shadow: 0 0 10px rgba(0, 195, 255, 0.8);
-}
-
-.cyber-button {
-  background-color: var(--color-cyber-cyan);
-  color: var(--color-cyber-darkbg);
+.ls-button {
+  background-color: var(--color-accent);
+  color: var(--color-bg);
   padding: 0.5rem 1rem;
-  border-radius: 0.25rem;
-  font-weight: bold;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 15px rgba(0, 195, 255, 0.5);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  transition: background-color 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.cyber-button:hover {
-  background-color: var(--color-cyber-orange);
-  box-shadow: 0 0 20px rgba(255, 135, 0, 0.8);
+.ls-button:hover {
+  background-color: var(--color-accent-bright);
 }
 
 .terminal-window {
-  background: linear-gradient(135deg, rgba(10, 14, 39, 0.95) 0%, rgba(21, 26, 46, 0.95) 100%);
-  border: 1px solid var(--color-cyber-border);
-  border-radius: 0.5rem;
+  background: var(--color-bg-sidebar);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
   padding: 1.5rem;
-  backdrop-filter: blur(8px);
   font-family: var(--font-mono);
   font-size: 0.875rem;
   overflow: hidden;
-  box-shadow: 0 0 20px rgba(0, 195, 255, 0.1);
 }
 
 .metric-value {
   font-size: 2.25rem;
-  font-weight: bold;
-  text-shadow: 0 0 10px rgba(0, 195, 255, 0.8);
+  font-weight: 700;
 }
 
 .blink-cursor {
   display: inline-block;
   width: 0.5rem;
   height: 1.5rem;
-  background-color: var(--color-cyber-cyan);
+  background-color: var(--color-accent);
   margin-left: 0.25rem;
   animation: var(--animate-blink);
-}
-
-.scan-line {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(0, 195, 255, 0.8), transparent);
-  animation: scan-line 3s linear infinite;
-  pointer-events: none;
-  z-index: 9999;
 }
 
 /* Custom Scrollbar */
@@ -203,16 +146,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(10, 14, 39, 0.5);
+  background: var(--color-bg-sidebar);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 195, 255, 0.3);
+  background: var(--color-line-strong);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 195, 255, 0.5);
+  background: var(--color-accent-dim);
 }
 
 /* React Grid Layout Styles */
@@ -222,29 +165,29 @@ body {
 
 .react-grid-item {
   transition: all 200ms ease;
-  background-color: var(--color-cyber-cardbg);
-  border: 1px solid var(--color-cyber-border);
+  background-color: var(--color-elevated);
+  border: 1px solid var(--color-line);
   border-radius: 0.5rem;
   overflow: hidden;
-  box-shadow: 0 0 20px rgba(0, 195, 255, 0.1);
+  box-shadow: var(--shadow-card);
 }
 
 .react-grid-item:hover {
-  border-color: var(--color-cyber-cyan);
-  box-shadow: 0 0 30px rgba(0, 195, 255, 0.3);
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-card);
 }
 
 .react-grid-item.dragging {
   opacity: 0.8;
-  border: 2px solid var(--color-cyber-cyan);
-  box-shadow: 0 0 40px rgba(0, 195, 255, 0.6);
+  border: 2px solid var(--color-accent);
+  box-shadow: var(--shadow-card);
   z-index: 100;
 }
 
 .react-grid-item.resizing {
   opacity: 0.9;
-  border: 2px solid var(--color-cyber-orange);
-  box-shadow: 0 0 40px rgba(255, 135, 0, 0.6);
+  border: 2px solid var(--color-accent-bright);
+  box-shadow: var(--shadow-card);
 }
 
 .react-grid-item > .react-resizable-handle {
@@ -265,19 +208,19 @@ body {
   bottom: 3px;
   width: 8px;
   height: 8px;
-  border-right: 2px solid var(--color-cyber-cyan);
-  border-bottom: 2px solid var(--color-cyber-cyan);
+  border-right: 2px solid var(--color-accent);
+  border-bottom: 2px solid var(--color-accent);
   opacity: 0.5;
 }
 
 .react-grid-item > .react-resizable-handle:hover::after {
   opacity: 1;
-  border-color: var(--color-cyber-orange);
+  border-color: var(--color-accent-bright);
 }
 
 .react-grid-placeholder {
-  background: rgba(0, 195, 255, 0.2);
-  border: 2px dashed var(--color-cyber-cyan);
+  background: rgba(212, 165, 116, 0.15);
+  border: 2px dashed var(--color-accent);
   border-radius: 0.5rem;
   opacity: 0.5;
   transition: all 100ms ease;

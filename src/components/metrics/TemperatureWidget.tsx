@@ -3,11 +3,11 @@ import { MetricsShell } from './MetricsShell';
 
 export function TemperatureWidget() {
   return (
-    <MetricsShell title="TEMPERATURE" icon={<Thermometer className="text-cyber-orange w-5 h-5" />}>
+    <MetricsShell title="TEMPERATURE" icon={<Thermometer className="text-accent-bright w-5 h-5" />}>
       {metrics =>
         metrics.temperature.available ? (
           <div className="space-y-1">
-            <div className="text-4xl font-bold text-cyber-orange">
+            <div className="text-4xl font-bold text-accent-bright">
               {metrics.temperature.main.toFixed(1)}°C
             </div>
             <div className="text-xs text-gray-400">Max: {metrics.temperature.max.toFixed(1)}°C</div>

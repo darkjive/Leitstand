@@ -139,7 +139,7 @@ export function FirewallMonitor() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-cyber-cyan animate-pulse">Loading firewall data...</div>
+        <div className="text-accent animate-pulse">Loading firewall data...</div>
       </div>
     );
   }
@@ -151,7 +151,7 @@ export function FirewallMonitor() {
         <div className="text-red-400 text-sm">{error}</div>
         <button
           onClick={fetchAllData}
-          className="mt-4 px-4 py-2 bg-cyber-cardbg border border-cyber-cyan text-cyber-cyan rounded hover:bg-cyber-cyan/10 transition-colors text-sm"
+          className="mt-4 px-4 py-2 bg-elevated border border-accent text-accent rounded hover:bg-accent/10 transition-colors text-sm"
         >
           Retry
         </button>
@@ -160,12 +160,12 @@ export function FirewallMonitor() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-cyber-cardbg rounded-lg border border-cyber-cyan/30 overflow-hidden">
+    <div className="h-full flex flex-col bg-elevated rounded-lg border border-accent/30 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-cyber-cyan/30">
+      <div className="flex items-center justify-between p-4 border-b border-accent/30">
         <div className="flex items-center gap-2">
           <Shield className={`w-5 h-5 ${status?.active ? 'text-green-400' : 'text-red-400'}`} />
-          <h3 className="text-lg font-bold text-cyber-cyan">Firewall Monitor</h3>
+          <h3 className="text-lg font-bold text-accent">Firewall Monitor</h3>
           {status && (
             <span
               className={`text-xs px-2 py-1 rounded ${
@@ -180,15 +180,15 @@ export function FirewallMonitor() {
         </div>
         <button
           onClick={fetchAllData}
-          className="p-2 hover:bg-cyber-cyan/10 rounded transition-colors"
+          className="p-2 hover:bg-accent/10 rounded transition-colors"
           title="Refresh"
         >
-          <RefreshCw className="w-4 h-4 text-cyber-cyan" />
+          <RefreshCw className="w-4 h-4 text-accent" />
         </button>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-cyber-cyan/30">
+      <div className="flex border-b border-accent/30">
         {[
           { id: 'status' as TabType, label: 'Status', icon: Shield },
           { id: 'logs' as TabType, label: 'Logs', icon: Activity },
@@ -200,8 +200,8 @@ export function FirewallMonitor() {
             onClick={() => setActiveTab(tab.id)}
             className={`flex-1 px-4 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
               activeTab === tab.id
-                ? 'bg-cyber-cyan/20 text-cyber-cyan border-b-2 border-cyber-cyan'
-                : 'text-gray-400 hover:text-cyber-cyan hover:bg-cyber-cyan/10'
+                ? 'bg-accent/20 text-accent border-b-2 border-accent'
+                : 'text-gray-400 hover:text-accent hover:bg-accent/10'
             }`}
           >
             <tab.icon className="w-4 h-4" />
@@ -231,21 +231,21 @@ function StatusTab({ status }: { status: UFWStatus | null }) {
     <div className="space-y-4">
       {/* Overview */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-cyber-darkbg/50 p-3 rounded border border-cyber-cyan/20">
+        <div className="bg-bg/50 p-3 rounded border border-accent/20">
           <div className="text-xs text-gray-400 mb-1">Status</div>
           <div className={`text-lg font-bold ${status.active ? 'text-green-400' : 'text-red-400'}`}>
             {status.active ? 'Active' : 'Inactive'}
           </div>
         </div>
-        <div className="bg-cyber-darkbg/50 p-3 rounded border border-cyber-cyan/20">
+        <div className="bg-bg/50 p-3 rounded border border-accent/20">
           <div className="text-xs text-gray-400 mb-1">Logging</div>
-          <div className="text-lg font-bold text-cyber-cyan">{status.logging}</div>
+          <div className="text-lg font-bold text-accent">{status.logging}</div>
         </div>
       </div>
 
       {/* Default Policies */}
-      <div className="bg-cyber-darkbg/50 p-4 rounded border border-cyber-cyan/20">
-        <h4 className="text-sm font-bold text-cyber-cyan mb-3">Default Policies</h4>
+      <div className="bg-bg/50 p-4 rounded border border-accent/20">
+        <h4 className="text-sm font-bold text-accent mb-3">Default Policies</h4>
         <div className="grid grid-cols-3 gap-3 text-sm">
           <div>
             <span className="text-gray-400">Incoming:</span>
@@ -259,18 +259,18 @@ function StatusTab({ status }: { status: UFWStatus | null }) {
           </div>
           <div>
             <span className="text-gray-400">Outgoing:</span>
-            <span className="ml-2 font-mono text-cyber-cyan">{status.defaultOutgoing}</span>
+            <span className="ml-2 font-mono text-accent">{status.defaultOutgoing}</span>
           </div>
           <div>
             <span className="text-gray-400">Routed:</span>
-            <span className="ml-2 font-mono text-cyber-cyan">{status.defaultRouted}</span>
+            <span className="ml-2 font-mono text-accent">{status.defaultRouted}</span>
           </div>
         </div>
       </div>
 
       {/* Rules */}
-      <div className="bg-cyber-darkbg/50 p-4 rounded border border-cyber-cyan/20">
-        <h4 className="text-sm font-bold text-cyber-cyan mb-3">
+      <div className="bg-bg/50 p-4 rounded border border-accent/20">
+        <h4 className="text-sm font-bold text-accent mb-3">
           Active Rules ({status.rules.length})
         </h4>
         <div className="space-y-2 max-h-60 overflow-auto">
@@ -280,10 +280,10 @@ function StatusTab({ status }: { status: UFWStatus | null }) {
             status.rules.map(rule => (
               <div
                 key={rule.num}
-                className="flex items-center gap-3 text-xs bg-cyber-darkbg/30 p-2 rounded border border-cyber-cyan/10"
+                className="flex items-center gap-3 text-xs bg-bg/30 p-2 rounded border border-accent/10"
               >
                 <span className="text-gray-500 w-6">#{rule.num}</span>
-                <span className="text-cyber-cyan flex-1 font-mono">{rule.to}</span>
+                <span className="text-accent flex-1 font-mono">{rule.to}</span>
                 <span
                   className={`px-2 py-1 rounded font-bold ${
                     rule.action.includes('ALLOW')
@@ -333,12 +333,12 @@ function LogsTab({ logs }: { logs: UFWLogEntry[] }) {
           <div className="text-gray-300 space-y-1">
             <div>
               <span className="text-gray-500">From:</span>{' '}
-              <span className="text-cyber-orange">{log.srcIp}</span>
+              <span className="text-accent-bright">{log.srcIp}</span>
               {log.srcPort && <span className="text-gray-500">:{log.srcPort}</span>}
             </div>
             <div>
               <span className="text-gray-500">To:</span>{' '}
-              <span className="text-cyber-cyan">{log.dstIp}</span>
+              <span className="text-accent">{log.dstIp}</span>
               {log.dstPort && (
                 <>
                   <span className="text-gray-500">:{log.dstPort}</span>
@@ -367,11 +367,11 @@ function AttackersTab({ attackers }: { attackers: AttackerStats[] }) {
   return (
     <div className="space-y-3">
       {attackers.map((attacker, idx) => (
-        <div key={idx} className="bg-cyber-darkbg/50 p-4 rounded border border-red-500/30">
+        <div key={idx} className="bg-bg/50 p-4 rounded border border-red-500/30">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <ShieldAlert className="w-4 h-4 text-red-400" />
-              <span className="font-mono text-cyber-orange font-bold">{attacker.ip}</span>
+              <span className="font-mono text-accent-bright font-bold">{attacker.ip}</span>
             </div>
             <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded border border-red-500/30">
               {attacker.blockedCount} blocks
@@ -382,7 +382,7 @@ function AttackersTab({ attackers }: { attackers: AttackerStats[] }) {
             {attacker.targetPorts.length > 0 && (
               <div>
                 Target ports:{' '}
-                <span className="text-cyber-cyan">{attacker.targetPorts.join(', ')}</span>
+                <span className="text-accent">{attacker.targetPorts.join(', ')}</span>
               </div>
             )}
           </div>
@@ -401,8 +401,8 @@ function PortsTab({ portScan }: { portScan: PortScanResult | null }) {
   return (
     <div className="space-y-4">
       {/* Local Ports */}
-      <div className="bg-cyber-darkbg/50 p-4 rounded border border-cyber-cyan/20">
-        <h4 className="text-sm font-bold text-cyber-cyan mb-3">
+      <div className="bg-bg/50 p-4 rounded border border-accent/20">
+        <h4 className="text-sm font-bold text-accent mb-3">
           Local Listening Ports ({portScan.localPorts.length})
         </h4>
         <div className="space-y-2 max-h-60 overflow-auto">
@@ -412,11 +412,11 @@ function PortsTab({ portScan }: { portScan: PortScanResult | null }) {
             portScan.localPorts.map((port, idx) => (
               <div
                 key={idx}
-                className="flex items-center gap-3 text-xs bg-cyber-darkbg/30 p-2 rounded border border-cyber-cyan/10"
+                className="flex items-center gap-3 text-xs bg-bg/30 p-2 rounded border border-accent/10"
               >
-                <span className="text-cyber-orange font-mono font-bold w-16">{port.port}</span>
+                <span className="text-accent-bright font-mono font-bold w-16">{port.port}</span>
                 <span className="text-gray-500 w-12">{port.protocol}</span>
-                <span className="text-cyber-cyan flex-1">{port.service}</span>
+                <span className="text-accent flex-1">{port.service}</span>
                 {port.program && <span className="text-gray-400 font-mono">{port.program}</span>}
               </div>
             ))
@@ -425,8 +425,8 @@ function PortsTab({ portScan }: { portScan: PortScanResult | null }) {
       </div>
 
       {/* External Ports */}
-      <div className="bg-cyber-darkbg/50 p-4 rounded border border-orange-500/30">
-        <h4 className="text-sm font-bold text-cyber-orange mb-3">
+      <div className="bg-bg/50 p-4 rounded border border-orange-500/30">
+        <h4 className="text-sm font-bold text-accent-bright mb-3">
           Externally Visible Ports ({portScan.externalPorts.length})
         </h4>
         <div className="space-y-2 max-h-60 overflow-auto">
@@ -438,7 +438,7 @@ function PortsTab({ portScan }: { portScan: PortScanResult | null }) {
                 key={idx}
                 className="flex items-center gap-3 text-xs bg-orange-500/10 p-2 rounded border border-orange-500/30"
               >
-                <span className="text-cyber-orange font-mono font-bold w-16">{port.port}</span>
+                <span className="text-accent-bright font-mono font-bold w-16">{port.port}</span>
                 <span className="text-gray-500 w-12">{port.protocol}</span>
                 <span className="text-orange-300 flex-1">{port.service}</span>
                 <span className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded">

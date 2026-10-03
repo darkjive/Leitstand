@@ -32,7 +32,7 @@ export function DockerWidget() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-cyber-cyan animate-pulse">Loading Docker info...</div>
+        <div className="text-accent animate-pulse">Loading Docker info...</div>
       </div>
     );
   }
@@ -44,7 +44,7 @@ export function DockerWidget() {
         <div className="text-red-400 text-sm">{error || 'Failed to load Docker info'}</div>
         <button
           onClick={fetchDockerInfo}
-          className="mt-4 px-4 py-2 bg-cyber-cardbg border border-cyber-cyan text-cyber-cyan rounded hover:bg-cyber-cyan/10 transition-colors text-sm"
+          className="mt-4 px-4 py-2 bg-elevated border border-accent text-accent rounded hover:bg-accent/10 transition-colors text-sm"
         >
           Retry
         </button>
@@ -66,15 +66,15 @@ export function DockerWidget() {
     <div className="h-full flex flex-col space-y-4">
       {/* Stats Summary */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-cyber-cardbg border border-cyber-border rounded-lg p-3">
+        <div className="bg-elevated border border-line rounded-lg p-3">
           <div className="text-xs text-gray-400 mb-1">TOTAL</div>
-          <div className="text-2xl font-bold text-cyber-cyan">{dockerInfo.total}</div>
+          <div className="text-2xl font-bold text-accent">{dockerInfo.total}</div>
         </div>
-        <div className="bg-cyber-cardbg border border-green-500/30 rounded-lg p-3">
+        <div className="bg-elevated border border-green-500/30 rounded-lg p-3">
           <div className="text-xs text-gray-400 mb-1">RUNNING</div>
           <div className="text-2xl font-bold text-green-400">{dockerInfo.running}</div>
         </div>
-        <div className="bg-cyber-cardbg border border-red-500/30 rounded-lg p-3">
+        <div className="bg-elevated border border-red-500/30 rounded-lg p-3">
           <div className="text-xs text-gray-400 mb-1">STOPPED</div>
           <div className="text-2xl font-bold text-red-400">{dockerInfo.stopped}</div>
         </div>
@@ -91,7 +91,7 @@ export function DockerWidget() {
           dockerInfo.containers.map(container => (
             <div
               key={container.id}
-              className={`bg-cyber-cardbg border rounded-lg p-3 transition-colors ${
+              className={`bg-elevated border rounded-lg p-3 transition-colors ${
                 container.state === 'running'
                   ? 'border-green-500/50 hover:border-green-500'
                   : 'border-red-500/50 hover:border-red-500'
@@ -104,7 +104,7 @@ export function DockerWidget() {
                   ) : (
                     <Square className="w-4 h-4 text-red-400" />
                   )}
-                  <div className="font-mono text-sm font-bold text-cyber-cyan truncate max-w-[200px]">
+                  <div className="font-mono text-sm font-bold text-accent truncate max-w-[200px]">
                     {container.name}
                   </div>
                 </div>
@@ -131,7 +131,7 @@ export function DockerWidget() {
                 {container.ports && container.ports.length > 0 && (
                   <div className="flex items-center gap-2">
                     <span className="text-gray-500">Ports:</span>
-                    <span className="font-mono text-cyber-orange">
+                    <span className="font-mono text-accent-bright">
                       {container.ports.join(', ')}
                     </span>
                   </div>
@@ -141,7 +141,7 @@ export function DockerWidget() {
                     {container.cpu !== undefined && (
                       <div className="flex items-center gap-1">
                         <span className="text-gray-500">CPU:</span>
-                        <span className="font-mono text-cyber-cyan">
+                        <span className="font-mono text-accent">
                           {container.cpu.toFixed(1)}%
                         </span>
                       </div>
@@ -149,7 +149,7 @@ export function DockerWidget() {
                     {container.memory !== undefined && (
                       <div className="flex items-center gap-1">
                         <span className="text-gray-500">MEM:</span>
-                        <span className="font-mono text-cyber-cyan">
+                        <span className="font-mono text-accent">
                           {container.memory.toFixed(1)}%
                         </span>
                       </div>

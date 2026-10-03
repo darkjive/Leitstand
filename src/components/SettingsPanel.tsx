@@ -57,19 +57,19 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-4xl h-[80vh] bg-cyber-cardbg border border-cyber-cyan rounded-lg flex flex-col overflow-hidden"
-        style={{ boxShadow: '0 0 40px rgba(0, 195, 255, 0.3)' }}
+        className="w-full max-w-4xl h-[80vh] bg-elevated border border-accent rounded-lg flex flex-col overflow-hidden"
+        style={{ boxShadow: 'var(--shadow-card)' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-cyber-border bg-cyber-darkbg">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-line bg-bg">
           <div className="flex items-center gap-3">
-            <SettingsIcon className="w-5 h-5 text-cyber-cyan" />
-            <h2 className="text-lg font-bold cyber-glow">SETTINGS</h2>
+            <SettingsIcon className="w-5 h-5 text-accent" />
+            <h2 className="text-lg font-bold">SETTINGS</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded hover:bg-cyber-cyan/10 text-gray-400 hover:text-cyber-cyan transition-all"
+            className="p-1.5 rounded hover:bg-accent/10 text-gray-400 hover:text-accent transition-all"
             title="Close (Esc)"
           >
             <X className="w-5 h-5" />
@@ -78,7 +78,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
 
         {/* Body: Sidebar + Content */}
         <div className="flex-1 flex min-h-0">
-          <nav className="w-48 border-r border-cyber-border bg-cyber-darkbg/50 overflow-y-auto p-2">
+          <nav className="w-48 border-r border-line bg-bg/50 overflow-y-auto p-2">
             {SECTIONS.map(s => {
               const Icon = s.icon;
               const active = section === s.id;
@@ -88,8 +88,8 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                   onClick={() => setSection(s.id)}
                   className={`w-full flex items-center gap-2 px-3 py-2 rounded text-sm font-mono transition-all mb-1 ${
                     active
-                      ? 'bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/50'
-                      : 'text-gray-400 hover:bg-cyber-cyan/10 hover:text-cyber-cyan border border-transparent'
+                      ? 'bg-accent/20 text-accent border border-accent/50'
+                      : 'text-gray-400 hover:bg-accent/10 hover:text-accent border border-transparent'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -122,7 +122,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
 function SectionHeader({ title, hint }: { title: string; hint?: string }) {
   return (
     <div className="mb-5">
-      <h3 className="text-sm font-bold text-cyber-cyan">{title}</h3>
+      <h3 className="text-sm font-bold text-accent">{title}</h3>
       {hint && <p className="text-xs text-gray-500 mt-1">{hint}</p>}
     </div>
   );
@@ -138,7 +138,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 const inputClass =
-  'w-full px-3 py-2 bg-cyber-darkbg border border-cyber-border rounded text-sm text-cyber-cyan font-mono focus:border-cyber-cyan focus:outline-none';
+  'w-full px-3 py-2 bg-bg border border-line rounded text-sm text-accent font-mono focus:border-accent focus:outline-none';
 
 // ============================================================
 // General: GitHub Username + Weather Location
@@ -213,8 +213,8 @@ function GeneralSection() {
 
       <p className="text-xs text-gray-600">
         GitHub username and weather use public data only. The dashboard token is sent as{' '}
-        <code className="text-cyber-cyan">X-Dashboard-Token</code> on destructive actions and is
-        only required if you set <code className="text-cyber-cyan">DASHBOARD_TOKEN</code> on a
+        <code className="text-accent">X-Dashboard-Token</code> on destructive actions and is
+        only required if you set <code className="text-accent">DASHBOARD_TOKEN</code> on a
         LAN-exposed backend.
       </p>
     </div>
@@ -246,7 +246,7 @@ function SoundSection() {
     <div className="space-y-6 max-w-md">
       <SectionHeader title="SOUND" hint="Background ambiance playback." />
 
-      <div className="flex items-center justify-between p-3 bg-cyber-darkbg border border-cyber-border rounded">
+      <div className="flex items-center justify-between p-3 bg-bg border border-line rounded">
         <div>
           <div className="text-sm font-mono text-gray-200">Ambiance Enabled</div>
           <div className="text-xs text-gray-500 mt-1">Toggle background sound playback.</div>
@@ -254,12 +254,12 @@ function SoundSection() {
         <button
           onClick={toggle}
           className={`relative w-12 h-6 rounded-full transition-all ${
-            isEnabled ? 'bg-cyber-cyan/80' : 'bg-cyber-border'
+            isEnabled ? 'bg-accent/80' : 'bg-line'
           }`}
           title={isEnabled ? 'Disable' : 'Enable'}
         >
           <span
-            className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-cyber-darkbg transition-all ${
+            className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-bg transition-all ${
               isEnabled ? 'translate-x-6' : ''
             }`}
           />
@@ -274,7 +274,7 @@ function SoundSection() {
           step="0.05"
           value={parseFloat(volume) || 0.3}
           onChange={e => changeVolume(e.target.value)}
-          className="w-full accent-cyber-cyan"
+          className="w-full accent-accent"
         />
       </Field>
     </div>
@@ -313,7 +313,7 @@ function ChatBotSection() {
       </Field>
 
       <p className="text-xs text-gray-600">
-        Ollama must be running (default <code className="text-cyber-cyan">localhost:11434</code>).
+        Ollama must be running (default <code className="text-accent">localhost:11434</code>).
         The dropdown inside the ChatBot widget still lets you switch per-session.
       </p>
     </div>
@@ -353,7 +353,7 @@ function ListEditor<T>({
   return (
     <div className="space-y-2">
       {items.length === 0 && (
-        <div className="text-xs text-gray-500 italic px-3 py-4 border border-dashed border-cyber-border rounded text-center">
+        <div className="text-xs text-gray-500 italic px-3 py-4 border border-dashed border-line rounded text-center">
           {emptyLabel}
         </div>
       )}
@@ -361,7 +361,7 @@ function ListEditor<T>({
       {items.map((item, idx) => (
         <div
           key={idx}
-          className="flex items-start gap-2 p-2 bg-cyber-darkbg border border-cyber-border rounded"
+          className="flex items-start gap-2 p-2 bg-bg border border-line rounded"
         >
           <div className="flex-1">
             {renderItem(
@@ -382,7 +382,7 @@ function ListEditor<T>({
 
       <button
         onClick={add}
-        className="flex items-center gap-1 px-3 py-2 text-xs font-mono bg-cyber-darkbg border border-cyber-cyan/50 text-cyber-cyan rounded hover:bg-cyber-cyan/10 transition-all"
+        className="flex items-center gap-1 px-3 py-2 text-xs font-mono bg-bg border border-accent/50 text-accent rounded hover:bg-accent/10 transition-all"
       >
         <Plus className="w-3 h-3" />
         <span>{addLabel}</span>

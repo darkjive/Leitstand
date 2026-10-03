@@ -53,7 +53,7 @@ export function NetworkOutageMap() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-cyber-cyan">
+        <div className="text-accent">
           SCANNING NETWORK<span className="blink-cursor"></span>
         </div>
       </div>
@@ -64,15 +64,15 @@ export function NetworkOutageMap() {
     <div className="h-full overflow-y-auto">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Activity className="w-5 h-5 text-cyber-orange" />
-          <h3 className="text-lg font-bold text-cyber-orange">CONNECTIVITY</h3>
+          <Activity className="w-5 h-5 text-accent-bright" />
+          <h3 className="text-lg font-bold text-accent-bright">CONNECTIVITY</h3>
         </div>
         <button
           onClick={fetchConnectivity}
-          className="p-1.5 hover:bg-cyber-cyan/10 rounded transition-all"
+          className="p-1.5 hover:bg-accent/10 rounded transition-all"
           title="Refresh"
         >
-          <RefreshCw className="w-4 h-4 text-gray-400 hover:text-cyber-cyan" />
+          <RefreshCw className="w-4 h-4 text-gray-400 hover:text-accent" />
         </button>
       </div>
 
@@ -101,7 +101,7 @@ export function NetworkOutageMap() {
         {checks.map(check => (
           <div
             key={check.name}
-            className="flex items-center justify-between p-3 bg-cyber-darkbg rounded border border-cyber-border"
+            className="flex items-center justify-between p-3 bg-bg rounded border border-line"
           >
             <div className="flex items-center gap-2">
               <div

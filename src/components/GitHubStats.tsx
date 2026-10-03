@@ -98,7 +98,7 @@ export function GitHubStats({ username = '' }: { username?: string }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-cyber-cyan">
+        <div className="text-accent">
           LOADING GITHUB STATS<span className="blink-cursor"></span>
         </div>
       </div>
@@ -116,20 +116,20 @@ export function GitHubStats({ username = '' }: { username?: string }) {
   return (
     <div className="h-full overflow-y-auto">
       <div className="flex items-center gap-3 mb-6">
-        <Github className="w-6 h-6 text-cyber-cyan" />
-        <h3 className="text-xl font-bold cyber-glow">GITHUB STATS</h3>
+        <Github className="w-6 h-6 text-accent" />
+        <h3 className="text-xl font-bold">GITHUB STATS</h3>
       </div>
 
       {/* User Profile */}
-      <div className="flex items-center gap-4 mb-6 pb-6 border-b border-cyber-border">
+      <div className="flex items-center gap-4 mb-6 pb-6 border-b border-line">
         <img
           src={user.avatar_url}
           alt={user.login}
-          className="w-16 h-16 rounded-full border-2 border-cyber-cyan"
-          style={{ boxShadow: '0 0 15px rgba(0, 195, 255, 0.5)' }}
+          className="w-16 h-16 rounded-full border-2 border-accent"
+          style={{ boxShadow: 'none' }}
         />
         <div className="flex-1">
-          <div className="text-lg font-bold text-cyber-cyan">{user.name || user.login}</div>
+          <div className="text-lg font-bold text-accent">{user.name || user.login}</div>
           <div className="text-sm text-gray-400">@{user.login}</div>
           {user.bio && <div className="text-xs text-gray-500 mt-1 line-clamp-2">{user.bio}</div>}
         </div>
@@ -137,16 +137,16 @@ export function GitHubStats({ username = '' }: { username?: string }) {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="text-center p-3 bg-cyber-darkbg rounded border border-cyber-border">
-          <div className="text-2xl font-bold text-cyber-cyan">{user.public_repos}</div>
+        <div className="text-center p-3 bg-bg rounded border border-line">
+          <div className="text-2xl font-bold text-accent">{user.public_repos}</div>
           <div className="text-xs text-gray-400 mt-1">Repositories</div>
         </div>
-        <div className="text-center p-3 bg-cyber-darkbg rounded border border-cyber-border">
-          <div className="text-2xl font-bold text-cyber-orange">{user.followers}</div>
+        <div className="text-center p-3 bg-bg rounded border border-line">
+          <div className="text-2xl font-bold text-accent-bright">{user.followers}</div>
           <div className="text-xs text-gray-400 mt-1">Followers</div>
         </div>
-        <div className="text-center p-3 bg-cyber-darkbg rounded border border-cyber-border">
-          <div className="text-2xl font-bold text-cyber-cyan">{user.following}</div>
+        <div className="text-center p-3 bg-bg rounded border border-line">
+          <div className="text-2xl font-bold text-accent">{user.following}</div>
           <div className="text-xs text-gray-400 mt-1">Following</div>
         </div>
       </div>
@@ -158,12 +158,12 @@ export function GitHubStats({ username = '' }: { username?: string }) {
           {repos.map((repo, i) => (
             <div
               key={i}
-              className="p-3 bg-cyber-darkbg rounded border border-cyber-border hover:border-cyber-cyan transition-all"
+              className="p-3 bg-bg rounded border border-line hover:border-accent transition-all"
             >
               <div className="flex items-start justify-between mb-2">
-                <div className="font-mono text-sm text-cyber-cyan font-bold">{repo.name}</div>
+                <div className="font-mono text-sm text-accent font-bold">{repo.name}</div>
                 {repo.language && (
-                  <span className="text-xs px-2 py-1 bg-cyber-cardbg rounded text-gray-400">
+                  <span className="text-xs px-2 py-1 bg-elevated rounded text-gray-400">
                     {repo.language}
                   </span>
                 )}
@@ -173,11 +173,11 @@ export function GitHubStats({ username = '' }: { username?: string }) {
               )}
               <div className="flex items-center gap-4 text-xs text-gray-400">
                 <div className="flex items-center gap-1">
-                  <Star className="w-3 h-3 text-cyber-orange" />
+                  <Star className="w-3 h-3 text-accent-bright" />
                   <span>{repo.stargazers_count}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <GitFork className="w-3 h-3 text-cyber-cyan" />
+                  <GitFork className="w-3 h-3 text-accent" />
                   <span>{repo.forks_count}</span>
                 </div>
                 <div className="flex items-center gap-1">

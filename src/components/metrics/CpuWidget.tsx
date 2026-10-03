@@ -3,7 +3,7 @@ import { MetricsShell } from './MetricsShell';
 
 export function CpuWidget() {
   return (
-    <MetricsShell title="CPU USAGE" icon={<Cpu className="text-cyber-cyan w-5 h-5" />}>
+    <MetricsShell title="CPU USAGE" icon={<Cpu className="text-accent w-5 h-5" />}>
       {metrics => (
         <div className="space-y-3">
           <div className="metric-value">{metrics.cpu.usage}%</div>
@@ -13,7 +13,7 @@ export function CpuWidget() {
                 <div className="text-gray-400">Core {i}</div>
                 <div
                   className={`font-bold ${
-                    parseFloat(core.usage) > 80 ? 'text-cyber-orange' : 'text-cyber-cyan'
+                    parseFloat(core.usage) > 80 ? 'text-accent-bright' : 'text-accent'
                   }`}
                 >
                   {core.usage}%
