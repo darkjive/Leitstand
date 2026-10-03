@@ -4,3 +4,11 @@
 onlyBuiltDependencies:
   - electron
   - esbuild
+
+# Transitive security fixes (pnpm audit): parents have not bumped these yet.
+# Drop an entry once its parent (cheerio → undici, express → qs,
+# express-rate-limit → ip-address) ships the fixed range itself.
+overrides:
+  undici: '>=7.29.1'
+  qs: '>=6.16.0'
+  ip-address: '>=10.7.1'
