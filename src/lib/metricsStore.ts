@@ -43,6 +43,7 @@ let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 let pollingTimer: ReturnType<typeof setInterval> | null = null;
 let wsFailCount = 0;
 let ws: WebSocket | null = null;
+let connectTimeout: ReturnType<typeof setTimeout> | null = null;
 
 function notify() {
   for (const l of listeners) l();
@@ -110,18 +111,24 @@ function connectWebSocket() {
   }
 
   let openHandled = false;
+  // One failure per socket: error, timeout and close all fire for the same dead
+  // connection and would otherwise count it up to three times.
+  let failCounted = false;
+  const countFailure = () => {
+    if (openHandled || failCounted) return;
+    failCounted = true;
+    wsFailCount++;
+  };
+  const socket = ws;
 
-  const connectTimeout = setTimeout(() => {
-    if (!openHandled && ws) {
-      ws.close();
-      wsFailCount++;
-      scheduleReconnectOrPoll();
-    }
+  connectTimeout = setTimeout(() => {
+    // close() on a CONNECTING socket fires onclose, which counts + reschedules
+    if (!openHandled) socket.close();
   }, WS_TIMEOUT_MS);
 
   ws.onopen = () => {
     openHandled = true;
-    clearTimeout(connectTimeout);
+    if (connectTimeout) clearTimeout(connectTimeout);
     wsFailCount = 0;
     patch({ status: 'connected', loading: false, error: null });
   };
@@ -137,17 +144,16 @@ function connectWebSocket() {
   };
 
   ws.onerror = () => {
-    clearTimeout(connectTimeout);
     if (!openHandled) {
-      wsFailCount++;
+      countFailure();
       patch({ status: 'disconnected', error: 'WebSocket connection failed' });
     }
   };
 
   ws.onclose = () => {
-    clearTimeout(connectTimeout);
+    if (connectTimeout) clearTimeout(connectTimeout);
     patch({ status: 'disconnected' });
-    if (!openHandled) wsFailCount++;
+    countFailure();
     scheduleReconnectOrPoll();
   };
 }
@@ -178,9 +184,14 @@ function teardown() {
     clearInterval(pollingTimer);
     pollingTimer = null;
   }
+  if (connectTimeout) {
+    // A stale timer would close the NEXT socket (React StrictMode mounts twice)
+    clearTimeout(connectTimeout);
+    connectTimeout = null;
+  }
   if (ws) {
-    // Null onclose so closing the socket does not trigger another reconnect cycle.
-    ws.onclose = null;
+    // Detach every handler so the dead socket cannot touch the fresh state.
+    ws.onopen = ws.onmessage = ws.onerror = ws.onclose = null;
     ws.close();
     ws = null;
   }

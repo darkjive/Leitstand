@@ -375,37 +375,34 @@ function App() {
     return () => clearInterval(interval);
   }, [enabledWidgets]);
 
+  // Side effects (localStorage, setLayout) live outside the state updater —
+  // updaters must be pure (StrictMode runs them twice).
   const toggleWidget = (widgetId: string) => {
-    setEnabledWidgets(prev => {
-      const updated = { ...prev, [widgetId]: !prev[widgetId] };
-      localStorage.setItem('enabled-widgets', JSON.stringify(updated));
+    const wasEnabled = enabledWidgets[widgetId];
+    const updated = { ...enabledWidgets, [widgetId]: !wasEnabled };
+    setEnabledWidgets(updated);
+    localStorage.setItem('enabled-widgets', JSON.stringify(updated));
 
-      if (!prev[widgetId] && updated[widgetId]) {
-        const existingItem = layout.find((item: { i: string }) => item.i === widgetId);
-        if (!existingItem) {
-          const maxY = layout.reduce(
-            (max: number, item: LayoutItem) => Math.max(max, item.y + item.h),
-            0
-          );
+    if (!wasEnabled && !layout.some((item: { i: string }) => item.i === widgetId)) {
+      const maxY = layout.reduce(
+        (max: number, item: LayoutItem) => Math.max(max, item.y + item.h),
+        0
+      );
 
-          const newItem = {
-            i: widgetId,
-            x: 0,
-            y: maxY,
-            w: 12,
-            h: 6,
-            minW: 4,
-            minH: 4,
-          };
+      const newItem = {
+        i: widgetId,
+        x: 0,
+        y: maxY,
+        w: 12,
+        h: 6,
+        minW: 4,
+        minH: 4,
+      };
 
-          const newLayout = [...layout, newItem];
-          setLayout(newLayout);
-          localStorage.setItem('dashboard-layout', JSON.stringify(newLayout));
-        }
-      }
-
-      return updated;
-    });
+      const newLayout = [...layout, newItem];
+      setLayout(newLayout);
+      localStorage.setItem('dashboard-layout', JSON.stringify(newLayout));
+    }
   };
 
   const manualSave = () => {
