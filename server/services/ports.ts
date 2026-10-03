@@ -133,8 +133,29 @@ export async function getLocalPorts(): Promise<ScannedPort[]> {
   }
 }
 
-// Get externally visible ports using nmap
+// A full -p- scan takes up to 30s and the widget polls every 60s — cache the
+// result and share one in-flight scan between concurrent callers.
+const NMAP_CACHE_MS = 5 * 60 * 1000;
+let nmapCache: { ports: ScannedPort[]; at: number } | null = null;
+let nmapInflight: Promise<ScannedPort[]> | null = null;
+
+// Scans loopback (all TCP ports): shows every listener reachable on localhost,
+// NOT what is reachable from outside — that depends on the firewall/bind address.
 export async function getExternalPorts(): Promise<ScannedPort[]> {
+  if (nmapCache && Date.now() - nmapCache.at < NMAP_CACHE_MS) return nmapCache.ports;
+  if (nmapInflight) return nmapInflight;
+  nmapInflight = runNmapScan()
+    .then(ports => {
+      nmapCache = { ports, at: Date.now() };
+      return ports;
+    })
+    .finally(() => {
+      nmapInflight = null;
+    });
+  return nmapInflight;
+}
+
+async function runNmapScan(): Promise<ScannedPort[]> {
   try {
     // Scan localhost to see what's externally accessible
     // -p-: scan all ports, --open: only show open ports
