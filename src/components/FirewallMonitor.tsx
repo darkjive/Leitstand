@@ -45,7 +45,10 @@ interface PortInfo {
   service: string;
   pid?: number;
   program?: string;
+  exposure?: 'all' | 'lan' | 'tailscale';
 }
+
+const EXPOSURE_LABEL = { all: 'ALL INTERFACES', lan: 'LAN', tailscale: 'TAILSCALE' } as const;
 
 interface PortScanResult {
   localPorts: PortInfo[];
@@ -149,10 +152,7 @@ export function FirewallMonitor() {
       <div className="flex flex-col items-center justify-center h-full text-center p-4">
         <AlertCircle className="w-12 h-12 text-red-400 mb-2" />
         <div className="text-red-400 text-sm">{error}</div>
-        <button
-          onClick={fetchAllData}
-          className="ds-btn mt-4"
-        >
+        <button onClick={fetchAllData} className="ds-btn mt-4">
           Retry
         </button>
       </div>
@@ -178,11 +178,7 @@ export function FirewallMonitor() {
             </span>
           )}
         </div>
-        <button
-          onClick={fetchAllData}
-          className="ds-btn ghost icon"
-          title="Refresh"
-        >
+        <button onClick={fetchAllData} className="ds-btn ghost icon" title="Refresh">
           <RefreshCw className="w-4 h-4 text-accent" />
         </button>
       </div>
@@ -270,9 +266,7 @@ function StatusTab({ status }: { status: UFWStatus | null }) {
 
       {/* Rules */}
       <div className="bg-bg/50 p-4 rounded border border-accent/20">
-        <h4 className="text-sm font-bold text-accent mb-3">
-          Active Rules ({status.rules.length})
-        </h4>
+        <h4 className="text-sm font-bold text-accent mb-3">Active Rules ({status.rules.length})</h4>
         <div className="space-y-2 max-h-60 overflow-auto">
           {status.rules.length === 0 ? (
             <div className="text-gray-400 text-xs">No custom rules configured</div>
@@ -381,8 +375,7 @@ function AttackersTab({ attackers }: { attackers: AttackerStats[] }) {
             <div>Last seen: {new Date(attacker.lastSeen).toLocaleString()}</div>
             {attacker.targetPorts.length > 0 && (
               <div>
-                Target ports:{' '}
-                <span className="text-accent">{attacker.targetPorts.join(', ')}</span>
+                Target ports: <span className="text-accent">{attacker.targetPorts.join(', ')}</span>
               </div>
             )}
           </div>
@@ -426,12 +419,15 @@ function PortsTab({ portScan }: { portScan: PortScanResult | null }) {
 
       {/* External Ports */}
       <div className="bg-bg/50 p-4 rounded border border-orange-500/30">
-        <h4 className="text-sm font-bold text-accent-bright mb-3">
-          Externally Visible Ports ({portScan.externalPorts.length})
+        <h4 className="text-sm font-bold text-accent-bright mb-1">
+          Network-Reachable Ports ({portScan.externalPorts.length})
         </h4>
+        <p className="text-xs text-gray-500 mb-3">
+          TCP listeners not bound to localhost. UFW may still block them; Docker ports bypass UFW.
+        </p>
         <div className="space-y-2 max-h-60 overflow-auto">
           {portScan.externalPorts.length === 0 ? (
-            <div className="text-gray-400 text-xs">No externally visible ports (good!)</div>
+            <div className="text-gray-400 text-xs">No network-reachable ports (good!)</div>
           ) : (
             portScan.externalPorts.map((port, idx) => (
               <div
@@ -441,9 +437,12 @@ function PortsTab({ portScan }: { portScan: PortScanResult | null }) {
                 <span className="text-accent-bright font-mono font-bold w-16">{port.port}</span>
                 <span className="text-gray-500 w-12">{port.protocol}</span>
                 <span className="text-orange-300 flex-1">{port.service}</span>
-                <span className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded">
-                  OPEN
-                </span>
+                {port.program && <span className="text-gray-400 font-mono">{port.program}</span>}
+                {port.exposure && (
+                  <span className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded">
+                    {EXPOSURE_LABEL[port.exposure]}
+                  </span>
+                )}
               </div>
             ))
           )}

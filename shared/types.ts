@@ -160,6 +160,9 @@ export interface ScannedPort {
   service: string;
   pid?: number;
   program?: string;
+  bindAddress?: string;
+  // Set on externalPorts: who can connect (all interfaces, LAN address, Tailscale only)
+  exposure?: 'all' | 'lan' | 'tailscale';
 }
 
 // ---- Web scraper (/api/scrape) ----
