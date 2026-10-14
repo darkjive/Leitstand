@@ -240,7 +240,14 @@ export async function getTopAttackers(limit = 10): Promise<AttackerStats[]> {
     const logs = await getUFWLogs(1000); // Analyze last 1000 entries
     // Multicast-Ziele (224.0.0.0/4, z.B. Router-IGMP an 224.0.0.1) sind keine Angriffe
     const isMulticast = (ip: string) => /^(22[4-9]|23\d)\./.test(ip);
-    const blockedLogs = logs.filter(log => log.action === 'BLOCK' && !isMulticast(log.dstIp));
+    // LAN-/Tailscale-/Link-Local-Quellen (z.B. SSDP-Antworten vom TV) sind keine Angriffe
+    const isLocalSource = (ip: string) =>
+      /^(0\.|10\.|127\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.)/.test(
+        ip
+      ) || /^(::1$|f[cd]|fe[89ab])/i.test(ip);
+    const blockedLogs = logs.filter(
+      log => log.action === 'BLOCK' && !isMulticast(log.dstIp) && !isLocalSource(log.srcIp)
+    );
 
     // Aggregate by source IP
     const attackerMap = new Map<string, { count: number; lastSeen: Date; ports: Set<number> }>();
