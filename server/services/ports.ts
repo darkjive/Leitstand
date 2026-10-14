@@ -11,29 +11,17 @@ export interface PortScanResult {
   scanTime: Date;
 }
 
-// Report which scanner tools are installed. nmap is optional (slow external
-// scan); ss is the fast local listener lister and ships with iproute2.
-export async function getPortScannerStatus(): Promise<{
-  ss: boolean;
-  nmap: boolean;
-  error?: string;
-}> {
-  const check = async (bin: string) => {
-    try {
-      await execAsync(`command -v ${bin}`);
-      return true;
-    } catch {
-      return false;
-    }
-  };
-  const [ss, nmap] = await Promise.all([check('ss'), check('nmap')]);
-  let error: string | undefined;
-  if (!ss && !nmap) {
-    error = "neither 'ss' (iproute2) nor 'nmap' is installed — install one to enable port scanning";
-  } else if (!nmap) {
-    error = "'nmap' not installed — external port scan will be empty, only local listeners shown";
+// Report whether the listener lister (ss, ships with iproute2) is installed.
+export async function getPortScannerStatus(): Promise<{ ss: boolean; error?: string }> {
+  try {
+    await execAsync('command -v ss');
+    return { ss: true };
+  } catch {
+    return {
+      ss: false,
+      error: "'ss' (iproute2) not installed — install it to enable port scanning",
+    };
   }
-  return { ss, nmap, error };
 }
 
 // Parse ss output line
@@ -67,20 +55,7 @@ function parseSSLine(line: string): ScannedPort | null {
     service,
     pid,
     program,
-  };
-}
-
-// Parse nmap output line
-// Example: 22/tcp   open  ssh
-function parseNmapLine(line: string): ScannedPort | null {
-  const match = line.match(/^(\d+)\/(tcp|udp)\s+(\w+)\s+(.+)$/);
-  if (!match) return null;
-
-  return {
-    port: parseInt(match[1]),
-    protocol: match[2].toUpperCase() as 'TCP' | 'UDP',
-    state: match[3],
-    service: match[4].trim(),
+    bindAddress: localAddr.slice(0, -portMatch[0].length),
   };
 }
 
@@ -133,57 +108,40 @@ export async function getLocalPorts(): Promise<ScannedPort[]> {
   }
 }
 
-// A full -p- scan takes up to 30s and the widget polls every 60s — cache the
-// result and share one in-flight scan between concurrent callers.
-const NMAP_CACHE_MS = 5 * 60 * 1000;
-let nmapCache: { ports: ScannedPort[]; at: number } | null = null;
-let nmapInflight: Promise<ScannedPort[]> | null = null;
-
-// Scans loopback (all TCP ports): shows every listener reachable on localhost,
-// NOT what is reachable from outside — that depends on the firewall/bind address.
-export async function getExternalPorts(): Promise<ScannedPort[]> {
-  if (nmapCache && Date.now() - nmapCache.at < NMAP_CACHE_MS) return nmapCache.ports;
-  if (nmapInflight) return nmapInflight;
-  nmapInflight = runNmapScan()
-    .then(ports => {
-      nmapCache = { ports, at: Date.now() };
-      return ports;
-    })
-    .finally(() => {
-      nmapInflight = null;
-    });
-  return nmapInflight;
+// Classify a bind address: loopback listeners are unreachable from other devices.
+function getExposure(bindAddress: string): ScannedPort['exposure'] | null {
+  const addr = bindAddress.replace(/^\[|\](%.*)?$/g, '');
+  if (/^(127\.|::1$)/.test(addr)) return null;
+  if (addr === '0.0.0.0' || addr === '*' || addr === '::') return 'all';
+  if (/^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.|^fd7a:115c:a1e0:/i.test(addr)) return 'tailscale';
+  return 'lan';
 }
 
-async function runNmapScan(): Promise<ScannedPort[]> {
-  try {
-    // Scan localhost to see what's externally accessible
-    // -p-: scan all ports, --open: only show open ports
-    const { stdout } = await execAsync('nmap -p- --open localhost', {
-      timeout: 30000, // 30 second timeout
-    });
-
-    const lines = stdout.split('\n');
-    const ports = lines
-      .map(parseNmapLine)
-      .filter((port): port is ScannedPort => port !== null)
-      .sort((a, b) => a.port - b.port);
-
-    return ports;
-  } catch (error) {
-    console.error('Failed to get external ports with nmap:', error);
-    return [];
+// TCP listeners bound to a non-loopback address, one entry per port (the widest
+// exposure wins when a port is bound on several addresses, e.g. 0.0.0.0 + [::]).
+function getReachablePorts(localPorts: ScannedPort[]): ScannedPort[] {
+  const rank = { tailscale: 0, lan: 1, all: 2 } as const;
+  const byPort = new Map<number, ScannedPort>();
+  for (const p of localPorts) {
+    if (p.protocol !== 'TCP' || !p.bindAddress) continue;
+    const exposure = getExposure(p.bindAddress);
+    if (!exposure) continue;
+    const existing = byPort.get(p.port);
+    if (!existing || rank[exposure] > rank[existing.exposure!]) {
+      byPort.set(p.port, { ...p, exposure });
+    }
   }
+  return Array.from(byPort.values()).sort((a, b) => a.port - b.port);
 }
 
 // Get both local and external port scan
 export async function getPortScan(): Promise<PortScanResult> {
   try {
-    const [localPorts, externalPorts] = await Promise.all([getLocalPorts(), getExternalPorts()]);
+    const localPorts = await getLocalPorts();
 
     return {
       localPorts,
-      externalPorts,
+      externalPorts: getReachablePorts(localPorts),
       scanTime: new Date(),
     };
   } catch (error) {

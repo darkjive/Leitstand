@@ -29,7 +29,7 @@
 | **Web Scraper**                                                                                                                    | Playwright/Chromium (see NixOS note below)            |
 | **Port Killer**                                                                                                                    | requires `lsof`                                       |
 | **Firewall Monitor**                                                                                                               | requires UFW (not available on NixOS)                 |
-| **Port Scanner**                                                                                                                   | requires `nmap`/`ss`                                  |
+| **Port Scanner**                                                                                                                   | requires `ss`                                         |
 | **GitHub Stats**                                                                                                                   | GitHub API (set your username in Settings)            |
 | **Hacker News Feed**                                                                                                               | HN Firebase API                                       |
 | **RSS Feed** / **Custom RSS Feed**                                                                                                 | any RSS/Atom URL (via rss2json.com CORS proxy)        |
@@ -81,7 +81,7 @@
 
 - **Node.js 22+**
 - **pnpm**
-- Optional: **Docker**, **Ollama**, **UFW**, **lsof**, **nmap** (per-widget)
+- Optional: **Docker**, **Ollama**, **UFW**, **lsof** (per-widget)
 
 ### Installation
 
@@ -155,7 +155,6 @@ Widgets degrade gracefully if a tool is missing, and report the reason in their 
 | Tool                | Required by                          | Install hint                                                                    |
 | ------------------- | ------------------------------------ | ------------------------------------------------------------------------------- |
 | `lsof`              | PortKiller                           | Debian: `lsof`, NixOS: `pkgs.lsof`                                              |
-| `nmap` (optional)   | PortScanner external scan            | Debian: `nmap`                                                                  |
 | `ss`                | PortScanner local listeners          | ships with `iproute2`                                                           |
 | `ufw` + sudo        | FirewallMonitor (Ubuntu/Debian only) | needs passwordless sudo for `ufw` + log reads (`sudo -n`, fails fast otherwise) |
 | `ollama`            | ChatBot                              | https://ollama.ai                                                               |
@@ -259,7 +258,7 @@ Widgets degrade gracefully if the underlying tool is missing.
 | WebScraper      | `pnpm exec playwright install` (NixOS: see below)                                |
 | DockerWidget    | Docker daemon socket access                                                      |
 | PortKiller      | `lsof` on PATH                                                                   |
-| PortScanner     | `nmap` or `ss` on PATH                                                           |
+| PortScanner     | `ss` on PATH                                                                     |
 | FirewallMonitor | UFW (absent on NixOS — widget degrades)                                          |
 | Git/NPM/Logs    | shell out; paths validated server-side (blocked system prefixes, tail allowlist) |
 
