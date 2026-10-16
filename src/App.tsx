@@ -441,14 +441,9 @@ function App() {
       >
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img src="/favicon.svg" alt="" className="w-8 h-8" />
-              <div>
-                <h1 className="text-2xl font-bold">
-                  Leitstand<span className="blink-cursor"></span>
-                </h1>
-                <p className="text-xs text-gray-400">Dev Control</p>
-              </div>
+            <div className="ds-brand">
+              <img src="/favicon.svg" alt="" />
+              <h1>Leitstand</h1>
             </div>
             <div className="flex items-center gap-2">
               <SoundManager />
