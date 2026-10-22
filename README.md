@@ -111,12 +111,14 @@ The dashboard works out of the box with defaults. For overrides, copy `.env.exam
 cp .env.example .env
 ```
 
-| Variable          | Default                  | Purpose                                                                                                         |
-| ----------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| `OLLAMA_URL`      | `http://localhost:11434` | Ollama server URL (chatbot proxy)                                                                               |
-| `BIND_HOST`       | `127.0.0.1`              | Network interface to bind the backend to (loopback default)                                                     |
-| `PORT`            | `3010`                   | Backend port (also picked up by the Vite proxy + Electron)                                                      |
-| `DASHBOARD_TOKEN` | _(empty)_                | Shared token for destructive endpoints. Empty = open (loopback default). **Required** when `BIND_HOST=0.0.0.0`. |
+| Variable                    | Default                  | Purpose                                                                                                                                             |
+| --------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `OLLAMA_URL`                | `http://localhost:11434` | Ollama server URL (chatbot proxy)                                                                                                                   |
+| `BIND_HOST`                 | `127.0.0.1`              | Network interface to bind the backend to (loopback default)                                                                                         |
+| `PORT`                      | `3010`                   | Backend port (also picked up by the Vite proxy + Electron)                                                                                          |
+| `DASHBOARD_TOKEN`           | _(empty)_                | Shared token for destructive endpoints. Empty = open (loopback default). **Required** when `BIND_HOST=0.0.0.0`.                                     |
+| `LEITSTAND_ALLOWED_HOSTS`   | _(empty)_                | Extra host names the Vite dev server accepts (comma-separated), e.g. a reverse proxy's public name.                                                 |
+| `LEITSTAND_ALLOWED_ORIGINS` | _(empty)_                | Exact page origins (`https://host:port`) allowed to open the metrics WebSocket besides loopback. Only for an authenticating reverse proxy in front. |
 
 > Frontend dev is `5180`, Vite preview is `4173`.
 

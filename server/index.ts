@@ -91,6 +91,15 @@ const OLLAMA_BASE_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
 // Shared token guarding destructive endpoints (npm run, port kill, git write,
 // log tail, scrape). Leave empty for loopback-only use; REQUIRED for BIND_HOST=0.0.0.0.
 const DASHBOARD_TOKEN = process.env.DASHBOARD_TOKEN || '';
+// Exact page origins allowed to open the metrics WebSocket besides loopback, e.g. the
+// Pforte gateway (https://host:port), comma-separated. The browser sets Origin itself,
+// so a foreign site cannot claim one of these.
+const ALLOWED_ORIGINS = new Set(
+  (process.env.LEITSTAND_ALLOWED_ORIGINS || '')
+    .split(',')
+    .map(o => o.trim().replace(/\/$/, ''))
+    .filter(Boolean)
+);
 const server = createServer(app);
 
 // WebSocket server with proper configuration.
@@ -109,6 +118,7 @@ const wss = new WebSocketServer({
     }
     const origin = info.origin || info.req.headers.origin;
     if (!origin) return true; // non-browser clients (curl, health checks)
+    if (ALLOWED_ORIGINS.has(origin)) return true;
     try {
       const { hostname, host } = new URL(origin);
       if (['localhost', '127.0.0.1', '::1', '[::1]'].includes(hostname)) return true;
