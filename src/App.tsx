@@ -8,21 +8,13 @@ import { StorageWidget } from './components/metrics/StorageWidget';
 import { TemperatureWidget } from './components/metrics/TemperatureWidget';
 import { WeatherWidget } from './components/WeatherWidget';
 import { GitHubStats } from './components/GitHubStats';
-import { ChatBot } from './components/ChatBot';
-import { QuickLinks } from './components/QuickLinks';
 import { ServiceStatus } from './components/ServiceStatus';
 import { NetworkOutageMap } from './components/NetworkOutageMap';
-import { HackerNewsFeed } from './components/HackerNewsFeed';
-import { CustomRSSFeed } from './components/CustomRSSFeed';
 import { WebScraper } from './components/WebScraper';
 import { MarkdownEditor } from './components/MarkdownEditor';
 import { SoundManager } from './components/SoundManager';
-import { PortKiller } from './components/PortKiller';
 import { GitStatus } from './components/GitStatus';
-import { NpmScriptRunner } from './components/NpmScriptRunner';
-import { LogAggregator } from './components/LogAggregator';
 import { DockerWidget } from './components/DockerWidget';
-import { FirewallMonitor } from './components/FirewallMonitor';
 import { SettingsPanel } from './components/SettingsPanel';
 import { useSetting } from './lib/settings';
 import { Toaster } from './components/Toaster';
@@ -33,28 +25,20 @@ import {
   Save,
   Settings,
   Activity,
-  Bot,
   ChartLine,
   CloudSun,
   Container,
   Cpu,
   FileText,
-  Flame,
   GitBranch,
   Github,
   Globe,
   Gpu,
   HardDrive,
-  Link,
   MemoryStick,
   Move,
-  Package,
   Radio,
-  Rss,
-  ScrollText,
-  ShieldAlert,
   Thermometer,
-  Zap,
 } from 'lucide-react';
 import 'react-grid-layout/css/styles.css';
 import { apiFetch } from './lib/api';
@@ -73,8 +57,7 @@ interface LayoutItem {
 // Every row's widths sum to exactly 12 and all items in a row share the same
 // height, so react-grid-layout's vertical compaction can never stagger
 // columns into a "staircase" — each row's bottom edge lines up cleanly for
-// the next row. Heights are sized generously for content-heavy widgets
-// (chat, logs, docker, firewall) to avoid inner scrolling.
+// the next row.
 const defaultLayout = [
   // Row 1: CPU, Storage + performance graph
   { i: 'metrics-cpu', x: 0, y: 0, w: 3, h: 4, minW: 3, minH: 3 },
@@ -86,35 +69,21 @@ const defaultLayout = [
   { i: 'metrics-vram', x: 4, y: 4, w: 4, h: 2, minW: 3, minH: 2 },
   { i: 'metrics-temp', x: 8, y: 4, w: 4, h: 2, minW: 3, minH: 2 },
 
-  // Row 3: Chatbot + Log Aggregator (content-heavy, extra height)
-  { i: 'chatbot', x: 0, y: 6, w: 6, h: 8, minW: 6, minH: 6 },
-  { i: 'log-aggregator', x: 6, y: 6, w: 6, h: 8, minW: 6, minH: 6 },
+  // Row 3: Dev tools
+  { i: 'git-status', x: 0, y: 6, w: 6, h: 6, minW: 4, minH: 4 },
+  { i: 'docker', x: 6, y: 6, w: 6, h: 6, minW: 4, minH: 4 },
 
-  // Row 4: Dev tools
-  { i: 'git-status', x: 0, y: 14, w: 4, h: 6, minW: 4, minH: 4 },
-  { i: 'npm-script-runner', x: 4, y: 14, w: 4, h: 6, minW: 4, minH: 4 },
-  { i: 'docker', x: 8, y: 14, w: 4, h: 6, minW: 4, minH: 4 },
+  // Row 4: Services
+  { i: 'github', x: 0, y: 12, w: 4, h: 4, minW: 4, minH: 4 },
+  { i: 'service-status', x: 4, y: 12, w: 4, h: 4, minW: 4, minH: 4 },
+  { i: 'weather', x: 8, y: 12, w: 4, h: 4, minW: 4, minH: 4 },
 
-  // Row 5: Services
-  { i: 'github', x: 0, y: 20, w: 4, h: 4, minW: 4, minH: 4 },
-  { i: 'service-status', x: 4, y: 20, w: 4, h: 4, minW: 4, minH: 4 },
-  { i: 'weather', x: 8, y: 20, w: 4, h: 4, minW: 4, minH: 4 },
+  // Row 5: Network + scraper
+  { i: 'network-outage', x: 0, y: 16, w: 6, h: 4, minW: 6, minH: 4 },
+  { i: 'web-scraper', x: 6, y: 16, w: 6, h: 4, minW: 3, minH: 3 },
 
-  // Row 6: Content feeds
-  { i: 'hacker-news', x: 0, y: 24, w: 4, h: 4, minW: 3, minH: 4 },
-  { i: 'custom-rss', x: 4, y: 24, w: 4, h: 4, minW: 4, minH: 4 },
-  { i: 'web-scraper', x: 8, y: 24, w: 4, h: 4, minW: 3, minH: 3 },
-
-  // Row 7: Network + quick access
-  { i: 'network-outage', x: 0, y: 28, w: 6, h: 4, minW: 6, minH: 4 },
-  { i: 'port-killer', x: 6, y: 28, w: 3, h: 4, minW: 3, minH: 3 },
-  { i: 'quick-links', x: 9, y: 28, w: 3, h: 4, minW: 3, minH: 3 },
-
-  // Row 8: Markdown editor (full width for editing room)
-  { i: 'markdown-editor', x: 0, y: 32, w: 12, h: 4, minW: 6, minH: 3 },
-
-  // Row 9: Firewall monitor (rule list needs room)
-  { i: 'firewall-monitor', x: 0, y: 36, w: 12, h: 6, minW: 6, minH: 6 },
+  // Row 6: Markdown editor (full width for editing room)
+  { i: 'markdown-editor', x: 0, y: 20, w: 12, h: 4, minW: 6, minH: 3 },
 ];
 
 // Below this width the grid collapses to one column (phones via the Pforte gateway).
@@ -129,22 +98,14 @@ const defaultEnabledWidgets = {
   'metrics-vram': true,
   'metrics-storage': true,
   'metrics-temp': true,
-  chatbot: true,
-  'quick-links': true,
   'markdown-editor': true,
   'web-scraper': true,
   weather: true,
   github: true,
-  'hacker-news': true,
-  'custom-rss': true,
   'service-status': true,
   'network-outage': true,
-  'port-killer': true,
   'git-status': true,
-  'npm-script-runner': true,
-  'log-aggregator': true,
   docker: true,
-  'firewall-monitor': true,
 };
 
 type WidgetStatus = 'ready' | 'warning' | 'disabled';
@@ -161,29 +122,22 @@ const widgetConfig = {
   'metrics-vram': { name: 'VRAM', icon: Gpu, component: VramWidget },
   'metrics-storage': { name: 'STORAGE', icon: HardDrive, component: StorageWidget },
   'metrics-temp': { name: 'TEMPERATURE', icon: Thermometer, component: TemperatureWidget },
-  chatbot: { name: 'AI CHATBOT', icon: Bot, component: ChatBot },
-  'quick-links': { name: 'QUICK LINKS', icon: Link, component: QuickLinks },
   'markdown-editor': { name: 'MARKDOWN EDITOR', icon: FileText, component: MarkdownEditor },
   'web-scraper': { name: 'WEB SCRAPER', icon: Globe, component: WebScraper },
   weather: { name: 'WEATHER', icon: CloudSun, component: WeatherWidget },
   github: { name: 'GITHUB STATS', icon: Github, component: GitHubStats },
-  'hacker-news': { name: 'HACKER NEWS', icon: Flame, component: HackerNewsFeed },
-  'custom-rss': { name: 'CUSTOM RSS', icon: Rss, component: CustomRSSFeed },
   'service-status': { name: 'SERVICE STATUS', icon: Activity, component: ServiceStatus },
   'network-outage': { name: 'NETWORK OUTAGES', icon: Radio, component: NetworkOutageMap },
-  'port-killer': { name: 'PORT KILLER', icon: Zap, component: PortKiller },
   'git-status': { name: 'GIT STATUS', icon: GitBranch, component: GitStatus },
-  'npm-script-runner': { name: 'NPM SCRIPTS', icon: Package, component: NpmScriptRunner },
-  'log-aggregator': { name: 'LOG AGGREGATOR', icon: ScrollText, component: LogAggregator },
   docker: { name: 'DOCKER', icon: Container, component: DockerWidget },
-  'firewall-monitor': { name: 'FIREWALL', icon: ShieldAlert, component: FirewallMonitor },
 };
 
-function validateEnabledWidgets(data: unknown): boolean {
-  if (typeof data !== 'object' || data === null) return false;
-  return Object.entries(data).every(
-    ([key, value]) => typeof key === 'string' && typeof value === 'boolean' && key in widgetConfig
-  );
+// Drops keys of removed widgets and fills in widgets the saved selection predates.
+function parseEnabledWidgets(data: unknown): Record<string, boolean> | null {
+  if (typeof data !== 'object' || data === null) return null;
+  const entries = Object.entries(data).filter(([key]) => Object.hasOwn(widgetConfig, key));
+  if (!entries.every(([, value]) => typeof value === 'boolean')) return null;
+  return { ...defaultEnabledWidgets, ...Object.fromEntries(entries) };
 }
 
 const METRIC_WIDGET_IDS = [
@@ -252,7 +206,7 @@ function migrateLegacyMetrics() {
 // Stale saved layouts (from an older defaultLayout revision) are discarded
 // so users get the fixed layout automatically, without having to know to
 // press "Reset".
-const LAYOUT_VERSION = 3;
+const LAYOUT_VERSION = 4;
 
 function invalidateStaleLayout() {
   try {
@@ -273,22 +227,6 @@ migrateLegacyMetrics();
 async function checkWidgetHealth(widgetId: string): Promise<WidgetHealth> {
   try {
     switch (widgetId) {
-      case 'chatbot':
-        // Check Ollama availability (silently fail without console spam)
-        try {
-          const res = await apiFetch('/api/ollama/api/tags', {
-            signal: AbortSignal.timeout(3000),
-          });
-          if (!res.ok) {
-            // Silent fail - don't log 404s repeatedly
-            return { status: 'warning', message: 'Ollama server not running' };
-          }
-          return { status: 'ready' };
-        } catch {
-          // Silent fail - Ollama not running is expected
-          return { status: 'warning', message: 'Ollama server not running' };
-        }
-
       case 'web-scraper':
         // Check backend server
         try {
@@ -337,10 +275,8 @@ function App() {
     try {
       const saved = localStorage.getItem('enabled-widgets');
       if (saved) {
-        const parsed = JSON.parse(saved);
-        if (validateEnabledWidgets(parsed)) {
-          return parsed;
-        }
+        const parsed = parseEnabledWidgets(JSON.parse(saved));
+        if (parsed) return parsed;
       }
     } catch {
       // Silent fallback to default

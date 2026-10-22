@@ -17,7 +17,6 @@ try {
 import { getSystemMetrics } from './services/systemMetrics.js';
 import { getWeather } from './services/weather.js';
 import { scrapeUrl } from './services/scraper.js';
-import { getActiveDevPorts, killPortProcess, getPortKillerStatus } from './services/portKiller.js';
 import {
   getGitStatus,
   gitPull,
@@ -30,29 +29,8 @@ import {
   bulkCommit,
   bulkFetch,
 } from './services/gitStatus.js';
-import {
-  getPackageScripts,
-  runScript,
-  getScriptOutput,
-  stopScript,
-  getRunningProcesses,
-  stopAllScripts,
-} from './services/npmScripts.js';
-import {
-  startTailing,
-  stopTailing,
-  stopAllTailing,
-  getLogLines,
-  getActiveTails,
-  clearLogs,
-  assignColor,
-  getCommonLogSuggestions,
-} from './services/logAggregator.js';
 import { getDockerInfo } from './services/docker.js';
-import { getUFWStatus, getUFWLogs, getTopAttackers } from './services/ufw.js';
-import { getPortScan, getPortScannerStatus } from './services/ports.js';
 import { isPrivateHost } from './services/netGuard.js';
-import type { LogFile } from '../shared/types.js';
 import type { IncomingMessage } from 'http';
 
 // Sensitive system paths that must never be touched by git operations
@@ -73,23 +51,12 @@ function validateGitPath(userPath: string): string {
   return resolvedPath;
 }
 
-/**
- * @types/express 5 types route params as `string | string[]`. A single
- * `:name` segment is always a string at runtime; arrays collapse to '' so
- * downstream allowlists reject them instead of silently stringifying.
- */
-function oneParam(value: string | string[] | undefined): string {
-  return Array.isArray(value) ? '' : (value ?? '');
-}
-
 const app = express();
 const PORT = parseInt(process.env.PORT || '3010', 10);
 // Bind to loopback by default. Set BIND_HOST=0.0.0.0 to expose on the LAN —
 // make sure you understand the consequences (no auth on any endpoint).
 const HOST = process.env.BIND_HOST || '127.0.0.1';
-const OLLAMA_BASE_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
-// Shared token guarding destructive endpoints (npm run, port kill, git write,
-// log tail, scrape). Leave empty for loopback-only use; REQUIRED for BIND_HOST=0.0.0.0.
+// Shared token gating the whole /api surface (reads included) and the metrics WebSocket. Leave empty for loopback-only use; REQUIRED for BIND_HOST=0.0.0.0.
 const DASHBOARD_TOKEN = process.env.DASHBOARD_TOKEN || '';
 // Exact page origins allowed to open the metrics WebSocket besides loopback, e.g. the
 // Pforte gateway (https://host:port), comma-separated. The browser sets Origin itself,
@@ -169,8 +136,6 @@ app.use(
           "'self'",
           `ws://localhost:${PORT}`, // metrics WebSocket
           'https://api.github.com', // GitHubStats
-          'https://hacker-news.firebaseio.com', // HackerNewsFeed
-          'https://api.rss2json.com', // RSSFeed CORS proxy
         ],
         mediaSrc: ["'self'"], // SoundManager ambiance
       },
@@ -187,7 +152,7 @@ app.use(
 
 // CSRF guard: a cross-site page can fire "simple" POSTs (no preflight) at the
 // loopback server, and CORS only hides the response — the side effect (git push,
-// kill, npm run) still happens. A custom header forces a preflight, which the
+// commit) still happens. A custom header forces a preflight, which the
 // CORS origin allowlist rejects. apiFetch() sets it on every request.
 app.use('/api', (req, res, next) => {
   if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') return next();
@@ -214,8 +179,8 @@ function safeEqual(a: string, b: string): boolean {
 }
 
 // Guards the API when DASHBOARD_TOKEN is set. The gate covers reads as well as
-// writes: endpoints like /api/git/scan, /api/logs/lines and /api/ports expose
-// filesystem layout, log contents and running processes, so token-gating only
+// writes: endpoints like /api/git/scan and /api/docker expose
+// filesystem layout and running containers, so token-gating only
 // the destructive half would leave an exposed instance wide open. When no token
 // is configured the API stays open — fine for the loopback default.
 function requireToken(req: Request, res: Response, next: NextFunction) {
@@ -238,12 +203,6 @@ const scraperLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
   message: { error: 'Scraping rate limit exceeded' },
-});
-
-const ollamaLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 50,
-  message: { error: 'Ollama rate limit exceeded' },
 });
 
 app.get('/api/metrics', generalLimiter, async (_req, res) => {
@@ -286,57 +245,6 @@ app.get('/api/docker', generalLimiter, async (_req, res) => {
   }
 });
 
-// Firewall monitoring endpoints
-app.get('/api/firewall/status', generalLimiter, async (_req, res) => {
-  try {
-    const status = await getUFWStatus();
-    res.json(status);
-  } catch (error) {
-    console.error('Failed to fetch UFW status:', error);
-    res.status(500).json({ error: 'Failed to fetch UFW status' });
-  }
-});
-
-app.get('/api/firewall/logs', generalLimiter, async (req, res) => {
-  try {
-    const limitSchema = z.number().int().min(1).max(1000).optional();
-    const limit = limitSchema.parse(req.query.limit ? Number(req.query.limit) : 100);
-    const logs = await getUFWLogs(limit);
-    res.json({ logs });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid limit parameter' });
-    }
-    console.error('Failed to fetch UFW logs:', error);
-    res.status(500).json({ error: 'Failed to fetch UFW logs' });
-  }
-});
-
-app.get('/api/firewall/top-attackers', generalLimiter, async (req, res) => {
-  try {
-    const limitSchema = z.number().int().min(1).max(50).optional();
-    const limit = limitSchema.parse(req.query.limit ? Number(req.query.limit) : 10);
-    const attackers = await getTopAttackers(limit);
-    res.json({ attackers });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid limit parameter' });
-    }
-    console.error('Failed to fetch top attackers:', error);
-    res.status(500).json({ error: 'Failed to fetch top attackers' });
-  }
-});
-
-app.get('/api/firewall/ports', generalLimiter, async (_req, res) => {
-  try {
-    const [portScan, status] = await Promise.all([getPortScan(), getPortScannerStatus()]);
-    res.json({ ...portScan, tools: status });
-  } catch (error) {
-    console.error('Failed to perform port scan:', error);
-    res.status(500).json({ error: 'Failed to perform port scan' });
-  }
-});
-
 app.post('/api/scrape', scraperLimiter, async (req, res) => {
   try {
     const scrapeSchema = z.object({
@@ -374,85 +282,6 @@ app.post('/api/scrape', scraperLimiter, async (req, res) => {
     res.status(500).json({
       error: 'Failed to scrape URL',
       message: error instanceof Error ? error.message : 'Unknown error',
-    });
-  }
-});
-
-// Whitelist of proxied Ollama endpoints. Everything else (delete, pull, push,
-// create, …) is blocked — the dashboard reads and chats, it doesn't manage models.
-const OLLAMA_GET_ENDPOINTS = new Set(['tags', 'ps', 'version']);
-const OLLAMA_POST_ENDPOINTS = new Set(['generate', 'chat', 'show']);
-
-// GET endpoint for Ollama (health checks, listing models)
-app.get('/api/ollama/api/:endpoint', generalLimiter, async (req, res) => {
-  try {
-    const endpoint = oneParam(req.params.endpoint);
-    if (!OLLAMA_GET_ENDPOINTS.has(endpoint)) {
-      return res.status(403).json({ error: 'Ollama endpoint not allowed' });
-    }
-    const ollamaPath = `/api/${endpoint}`;
-    const ollamaUrl = `${OLLAMA_BASE_URL}${ollamaPath}`;
-
-    const response = await fetch(ollamaUrl, {
-      method: 'GET',
-      signal: AbortSignal.timeout(3000),
-    });
-
-    if (!response.ok) {
-      // Silent fail for health checks - don't spam logs
-      return res.status(503).json({
-        available: false,
-        error: 'Ollama service not available',
-      });
-    }
-
-    const data = await response.json();
-    res.json(data);
-  } catch {
-    // Silent fail - Ollama not running is expected
-    res.status(503).json({
-      available: false,
-      error: 'Ollama service not running',
-    });
-  }
-});
-
-// POST endpoint for Ollama (chat, generate)
-app.post('/api/ollama/api/:endpoint', ollamaLimiter, async (req, res) => {
-  try {
-    const endpoint = oneParam(req.params.endpoint);
-    if (!OLLAMA_POST_ENDPOINTS.has(endpoint)) {
-      return res.status(403).json({ error: 'Ollama endpoint not allowed' });
-    }
-    const ollamaPath = `/api/${endpoint}`;
-    const ollamaUrl = `${OLLAMA_BASE_URL}${ollamaPath}`;
-
-    console.log(`[OLLAMA PROXY] ${req.method} ${ollamaPath}`);
-
-    const response = await fetch(ollamaUrl, {
-      method: req.method,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(req.body),
-    });
-
-    if (!response.ok) {
-      console.error(`[OLLAMA PROXY] Error: ${response.status} ${response.statusText}`);
-      return res.status(response.status).json({
-        error: `Ollama error: ${response.statusText}`,
-        details: 'Make sure Ollama is running (ollama serve)',
-      });
-    }
-
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    console.error('[OLLAMA PROXY] Failed:', error);
-    res.status(503).json({
-      error: 'Ollama service unavailable',
-      details: error instanceof Error ? error.message : 'Unknown error',
-      hint: 'Run: ollama serve',
     });
   }
 });
@@ -554,39 +383,6 @@ app.get('/api/connectivity', generalLimiter, async (_req, res) => {
   );
 
   res.json({ checks, timestamp: Date.now() });
-});
-
-app.get('/api/ports', generalLimiter, async (_req, res) => {
-  try {
-    const [ports, status] = await Promise.all([getActiveDevPorts(), getPortKillerStatus()]);
-    res.json({ ports, tools: status });
-  } catch (error) {
-    console.error('Failed to fetch active ports:', error);
-    res.status(500).json({ error: 'Failed to fetch active ports' });
-  }
-});
-
-app.post('/api/ports/kill', generalLimiter, async (req, res) => {
-  try {
-    const portSchema = z.object({
-      port: z.number().int().min(1).max(65535),
-    });
-
-    const { port } = portSchema.parse(req.body);
-    const result = await killPortProcess(port);
-
-    if (result.success) {
-      res.json(result);
-    } else {
-      res.status(400).json(result);
-    }
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid port number' });
-    }
-    console.error('Failed to kill port process:', error);
-    res.status(500).json({ error: 'Failed to kill process' });
-  }
 });
 
 app.get('/api/git/status', generalLimiter, async (req, res) => {
@@ -776,171 +572,6 @@ app.post('/api/git/bulk/commit', generalLimiter, async (req, res) => {
   }
 });
 
-app.get('/api/npm/scripts', generalLimiter, async (req, res) => {
-  try {
-    const repoPath = validateGitPath((req.query.path as string) || process.cwd());
-    const scripts = await getPackageScripts(repoPath);
-    res.json(scripts);
-  } catch (error) {
-    console.error('Failed to get package scripts:', error);
-    res.status(500).json({ error: 'Failed to read package.json' });
-  }
-});
-
-app.post('/api/npm/run', generalLimiter, async (req, res) => {
-  try {
-    const runSchema = z.object({
-      scriptName: z
-        .string()
-        .min(1)
-        .max(100)
-        .regex(/^[a-zA-Z0-9:_-]+$/, 'Invalid script name'),
-      repoPath: z.string().optional(),
-      packageManager: z.enum(['npm', 'pnpm', 'yarn', 'bun']).optional(),
-    });
-
-    const { scriptName, repoPath, packageManager } = runSchema.parse(req.body);
-    const safeRepoPath = validateGitPath(repoPath || process.cwd());
-    const processId = runScript(scriptName, safeRepoPath, packageManager || 'npm');
-
-    res.json({ processId, message: 'Script started' });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid request' });
-    }
-    console.error('Failed to run script:', error);
-    res.status(500).json({ error: 'Failed to run script' });
-  }
-});
-
-app.get('/api/npm/output/:processId', generalLimiter, async (req, res) => {
-  try {
-    const processId = oneParam(req.params.processId);
-    const output = getScriptOutput(processId);
-    res.json(output);
-  } catch (error) {
-    console.error('Failed to get script output:', error);
-    res.status(500).json({ error: 'Failed to get output' });
-  }
-});
-
-app.post('/api/npm/stop', generalLimiter, async (req, res) => {
-  try {
-    const stopSchema = z.object({
-      processId: z.string().min(1),
-    });
-
-    const { processId } = stopSchema.parse(req.body);
-    const result = stopScript(processId);
-
-    if (result.success) {
-      res.json(result);
-    } else {
-      res.status(400).json(result);
-    }
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid request' });
-    }
-    console.error('Failed to stop script:', error);
-    res.status(500).json({ error: 'Failed to stop script' });
-  }
-});
-
-app.get('/api/npm/running', generalLimiter, async (_req, res) => {
-  try {
-    const processes = getRunningProcesses();
-    res.json({ processes });
-  } catch (error) {
-    console.error('Failed to get running processes:', error);
-    res.status(500).json({ error: 'Failed to get running processes' });
-  }
-});
-
-app.post('/api/logs/tail', generalLimiter, async (req, res) => {
-  try {
-    const tailSchema = z.object({
-      id: z.string().min(1),
-      name: z.string().min(1).max(100),
-      path: z.string().min(1).max(500),
-      color: z.string().optional(),
-    });
-
-    const parsed = tailSchema.parse(req.body);
-    const file: LogFile = { ...parsed, color: parsed.color ?? assignColor() };
-
-    const result = await startTailing(file);
-    res.json(result);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid request' });
-    }
-    console.error('Failed to start tailing:', error);
-    res.status(500).json({ error: 'Failed to start tailing' });
-  }
-});
-
-app.post('/api/logs/stop', generalLimiter, async (req, res) => {
-  try {
-    const stopSchema = z.object({
-      fileId: z.string().min(1),
-    });
-
-    const { fileId } = stopSchema.parse(req.body);
-    const result = stopTailing(fileId);
-    res.json(result);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid request' });
-    }
-    console.error('Failed to stop tailing:', error);
-    res.status(500).json({ error: 'Failed to stop tailing' });
-  }
-});
-
-app.get('/api/logs/lines', generalLimiter, async (req, res) => {
-  try {
-    const fileIds = req.query.fileIds ? (req.query.fileIds as string).split(',') : undefined;
-    const lines = getLogLines(fileIds);
-    res.json({ lines });
-  } catch (error) {
-    console.error('Failed to get log lines:', error);
-    res.status(500).json({ error: 'Failed to get log lines' });
-  }
-});
-
-app.get('/api/logs/active', generalLimiter, async (_req, res) => {
-  try {
-    const tails = getActiveTails();
-    res.json({ tails });
-  } catch (error) {
-    console.error('Failed to get active tails:', error);
-    res.status(500).json({ error: 'Failed to get active tails' });
-  }
-});
-
-app.post('/api/logs/clear', generalLimiter, async (req, res) => {
-  try {
-    const fileId = req.body.fileId as string | undefined;
-    clearLogs(fileId);
-    res.json({ success: true, message: 'Logs cleared' });
-  } catch (error) {
-    console.error('Failed to clear logs:', error);
-    res.status(500).json({ error: 'Failed to clear logs' });
-  }
-});
-
-app.get('/api/logs/common-paths', generalLimiter, async (req, res) => {
-  try {
-    const repoPath = validateGitPath((req.query.path as string) || process.cwd());
-    const suggestions = await getCommonLogSuggestions(repoPath);
-    res.json({ suggestions });
-  } catch (error) {
-    console.error('Failed to get common paths:', error);
-    res.status(500).json({ error: 'Failed to get common paths' });
-  }
-});
-
 // One shared broadcast loop instead of a metrics interval per client — the
 // systeminformation scan runs once per tick no matter how many clients listen.
 const broadcastMetrics = async () => {
@@ -990,8 +621,8 @@ if (existsSync(distDir)) {
 }
 
 // Refuse to start rather than merely warn: a non-loopback bind without a
-// token would serve every destructive endpoint (git push, kill processes,
-// npm scripts) to the whole LAN unauthenticated.
+// token would serve every destructive endpoint (git push/commit, scraping)
+// to the whole LAN unauthenticated.
 if (!isLoopbackBind && !DASHBOARD_TOKEN) {
   console.error(
     '[SECURITY] Refusing to start: BIND_HOST is non-loopback but DASHBOARD_TOKEN is not set. Set DASHBOARD_TOKEN in .env or bind to loopback.'
@@ -1004,29 +635,13 @@ server.listen(PORT, HOST, () => {
   console.log(`System Metrics (HTTP): http://${HOST}:${PORT}/api/metrics`);
   console.log(`System Metrics (WebSocket): ws://${HOST}:${PORT}/ws`);
   console.log(`Weather: http://${HOST}:${PORT}/api/weather?location=Munich`);
-  console.log(`Ollama Proxy: POST http://${HOST}:${PORT}/api/ollama/*`);
   console.log(`Web Scraper: POST http://${HOST}:${PORT}/api/scrape`);
   console.log(`Health Check: http://${HOST}:${PORT}/health`);
   if (HOST === '127.0.0.1' || HOST === '::1') {
     console.log(`\nListening on loopback only. Set BIND_HOST=0.0.0.0 to expose on LAN.\n`);
   } else {
     console.log(
-      `\nWARNING: listening on ${HOST} — endpoints have NO AUTH other than DASHBOARD_TOKEN. Anyone with the token can run git push, kill processes, run npm scripts, etc.\n`
+      `\nWARNING: listening on ${HOST} — endpoints have NO AUTH other than DASHBOARD_TOKEN. Anyone with the token can run git push/commit, scrape URLs, etc.\n`
     );
   }
-});
-
-// Cleanup on shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, cleaning up...');
-  stopAllTailing();
-  stopAllScripts();
-  process.exit(0);
-});
-
-process.on('SIGINT', () => {
-  console.log('\nSIGINT received, cleaning up...');
-  stopAllTailing();
-  stopAllScripts();
-  process.exit(0);
 });

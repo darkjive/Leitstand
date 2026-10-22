@@ -9,7 +9,7 @@
     "type": "git",
     "url": "git+https://github.com/darkjive/Leitstand.git"
   },
-  "description": "Futuristic dev control center with real-time system monitoring, AI agent terminals, and cyberpunk aesthetics",
+  "description": "Futuristic dev control center with real-time system monitoring and cyberpunk aesthetics",
   "main": "electron/main.cjs",
   "engines": {
     "node": ">=22"
@@ -17,7 +17,6 @@
   "scripts": {
     "dev": "vite",
     "dev:server": "tsx server/index.ts",
-    "dev:ollama": "bash scripts/start-ollama.sh",
     "dev:all": "concurrently \"pnpm dev\" \"pnpm dev:server\"",
     "desktop": "electron .",
     "desktop:prod": "vite build && NODE_ENV=production electron .",

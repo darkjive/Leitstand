@@ -2,10 +2,10 @@
 // requests. The token is configured in Settings and persisted in localStorage
 // under 'dashboard-token'. When unset, requests go out unchanged (loopback
 // default). Server-side the token gates the whole /api surface — reads included,
-// since they expose filesystem layout, log contents and running processes.
+// since they expose filesystem layout and running containers.
 //
 // Only ever use this for same-origin '/api/...' paths: third-party endpoints
-// (GitHub, Hacker News, rss2json) must keep plain fetch so the token never
+// (GitHub) must keep plain fetch so the token never
 // leaves the machine.
 
 const TOKEN_KEY = 'dashboard-token';

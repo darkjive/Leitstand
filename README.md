@@ -11,38 +11,32 @@
 
 > **Futuristic homelab dashboard with real-time system monitoring and cyberpunk aesthetics inspired by pxlngn.net**
 
-![Dev Control dashboard](docs/screenshot.png)
+<p align="center">
+  <img src="docs/screenshot.png" alt="Leitstand dashboard on desktop" width="72%" />
+  <img src="docs/screenshot-mobile.png" alt="Leitstand dashboard on a phone" width="24%" />
+</p>
 
 ## ✨ Features
 
 ### Widgets (real backend data)
 
-| Widget                                                                                                                             | Data Source                                           |
-| ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| **System Metrics** — CPU · Memory · Performance graph · VRAM · Storage · Temperature (six independent widgets, shared data stream) | `systeminformation` + nvidia-smi/amdgpu sysfs         |
-| **Weather**                                                                                                                        | wttr.in API (proxied through the backend)             |
-| **Docker Monitoring**                                                                                                              | Docker socket                                         |
-| **ChatBot**                                                                                                                        | Local [Ollama](https://ollama.ai) (auto-discovers)    |
-| **Git Widget**                                                                                                                     | status, pull, push, fetch, commit, bulk operations    |
-| **NPM Script Runner**                                                                                                              | runs scripts from `package.json`                      |
-| **Log Aggregator**                                                                                                                 | tails files under the project, `/var/log` and `$HOME` |
-| **Web Scraper**                                                                                                                    | Playwright/Chromium (see NixOS note below)            |
-| **Port Killer**                                                                                                                    | requires `lsof`                                       |
-| **Firewall Monitor**                                                                                                               | requires UFW (not available on NixOS)                 |
-| **Port Scanner**                                                                                                                   | requires `ss`                                         |
-| **GitHub Stats**                                                                                                                   | GitHub API (set your username in Settings)            |
-| **Hacker News Feed**                                                                                                               | HN Firebase API                                       |
-| **RSS Feed** / **Custom RSS Feed**                                                                                                 | any RSS/Atom URL (via rss2json.com CORS proxy)        |
-| **Service Status**                                                                                                                 | Statuspage.io API (Cloudflare, GitHub, OpenAI, etc.)  |
-| **Connectivity Monitor**                                                                                                           | HTTP latency checks to internet endpoints             |
-| **Network Outage Map**                                                                                                             | visualizes connectivity status                        |
+| Widget                                                                                                                             | Data Source                                          |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| **System Metrics** — CPU · Memory · Performance graph · VRAM · Storage · Temperature (six independent widgets, shared data stream) | `systeminformation` + nvidia-smi/amdgpu sysfs        |
+| **Weather**                                                                                                                        | wttr.in API (proxied through the backend)            |
+| **Docker Monitoring**                                                                                                              | Docker socket                                        |
+| **Git Widget**                                                                                                                     | status, pull, push, fetch, commit, bulk operations   |
+| **Web Scraper**                                                                                                                    | Playwright/Chromium (see NixOS note below)           |
+| **GitHub Stats**                                                                                                                   | GitHub API (set your username in Settings)           |
+| **Service Status**                                                                                                                 | Statuspage.io API (Cloudflare, GitHub, OpenAI, etc.) |
+| **Connectivity Monitor**                                                                                                           | HTTP latency checks to internet endpoints            |
+| **Network Outage Map**                                                                                                             | visualizes connectivity status                       |
 
 ### Local-only widgets (no backend)
 
 | Widget              | Storage                                                                                                                                   |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | **Markdown Editor** | `localStorage`                                                                                                                            |
-| **Quick Links**     | `localStorage`                                                                                                                            |
 | **Sound Manager**   | `<audio>` loop — drop a file at `public/audio/ambiance-legal.ogg` (not shipped in the repo); the widget shows a disabled state without it |
 
 ### 🎨 Cyberpunk Design
@@ -81,7 +75,7 @@
 
 - **Node.js 22+**
 - **pnpm**
-- Optional: **Docker**, **Ollama**, **UFW**, **lsof** (per-widget)
+- Optional: **Docker** (per-widget)
 
 ### Installation
 
@@ -96,7 +90,6 @@ pnpm dev:all
 # Or start separately:
 pnpm dev        # Frontend only (Vite) - http://localhost:5180
 pnpm dev:server # Backend only (Express) - http://localhost:3010
-pnpm dev:ollama # Local Ollama server (optional, for ChatBot) - http://localhost:11434
 ```
 
 > Build scripts: pnpm blocks postinstall scripts by default; this repo allowlists
@@ -111,33 +104,30 @@ The dashboard works out of the box with defaults. For overrides, copy `.env.exam
 cp .env.example .env
 ```
 
-| Variable                    | Default                  | Purpose                                                                                                                                             |
-| --------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `OLLAMA_URL`                | `http://localhost:11434` | Ollama server URL (chatbot proxy)                                                                                                                   |
-| `BIND_HOST`                 | `127.0.0.1`              | Network interface to bind the backend to (loopback default)                                                                                         |
-| `PORT`                      | `3010`                   | Backend port (also picked up by the Vite proxy + Electron)                                                                                          |
-| `DASHBOARD_TOKEN`           | _(empty)_                | Shared token for destructive endpoints. Empty = open (loopback default). **Required** when `BIND_HOST=0.0.0.0`.                                     |
-| `LEITSTAND_ALLOWED_HOSTS`   | _(empty)_                | Extra host names the Vite dev server accepts (comma-separated), e.g. a reverse proxy's public name.                                                 |
-| `LEITSTAND_ALLOWED_ORIGINS` | _(empty)_                | Exact page origins (`https://host:port`) allowed to open the metrics WebSocket besides loopback. Only for an authenticating reverse proxy in front. |
+| Variable                    | Default     | Purpose                                                                                                                                             |
+| --------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BIND_HOST`                 | `127.0.0.1` | Network interface to bind the backend to (loopback default)                                                                                         |
+| `PORT`                      | `3010`      | Backend port (also picked up by the Vite proxy + Electron)                                                                                          |
+| `DASHBOARD_TOKEN`           | _(empty)_   | Shared token for destructive endpoints. Empty = open (loopback default). **Required** when `BIND_HOST=0.0.0.0`.                                     |
+| `LEITSTAND_ALLOWED_HOSTS`   | _(empty)_   | Extra host names the Vite dev server accepts (comma-separated), e.g. a reverse proxy's public name.                                                 |
+| `LEITSTAND_ALLOWED_ORIGINS` | _(empty)_   | Exact page origins (`https://host:port`) allowed to open the metrics WebSocket besides loopback. Only for an authenticating reverse proxy in front. |
 
 > Frontend dev is `5180`, Vite preview is `4173`.
 
 ### ⚠️ Security defaults
 
-The backend **binds to loopback (`127.0.0.1`) by default** — only your local browser can reach it. This is intentional: there is **no authentication** on any endpoint, and several can run shell commands on your behalf (`/api/ports/kill`, `/api/npm/run`, `/api/git/push|commit`, `/api/logs/tail`, `/api/scrape`).
+The backend **binds to loopback (`127.0.0.1`) by default** — only your local browser can reach it. This is intentional: there is **no authentication** on any endpoint, and several can act on your behalf (`/api/git/push|commit`, `/api/scrape`).
 
 Additional guards:
 
 - **Host-header allowlist** against DNS-rebinding attacks (active on loopback binds).
 - **SSRF guard** on the scraper: literal + DNS-resolved private-range checks, re-checked after redirects.
-- **Ollama proxy whitelist**: only `tags/ps/version/generate/chat/show` are proxied — model management endpoints are blocked.
-- **Path validation**: git/npm/log endpoints resolve paths and block sensitive system prefixes (`/etc`, `/proc`, `/root`, …); log tailing is limited to the project dir, `/var/log` and `$HOME` (minus `~/.ssh`, `~/.gnupg`, `~/.aws`, `~/.kube`, `~/.docker`).
+- **Path validation**: git endpoints resolve paths and block sensitive system prefixes (`/etc`, `/proc`, `/root`, …).
 
 - **Optional token gate**: set `DASHBOARD_TOKEN` to require an `X-Dashboard-Token` header on
   **the entire `/api` surface — reads included**, plus a `?token=` query param on the metrics
   WebSocket (browsers cannot set headers on a WS handshake). Reads are gated because endpoints
-  like `/api/git/scan`, `/api/logs/lines` and `/api/ports` expose filesystem layout, log contents
-  and running processes — gating only the destructive half would leave an exposed instance wide
+  like `/api/git/scan` and `/api/docker` expose filesystem layout and running containers — gating only the destructive half would leave an exposed instance wide
   open. `/health` stays open for uptime probes. Configure the matching token under
   **Settings → General → Dashboard Token** in the browser. When unset, the API stays open
   (fine for the loopback default). The token is compared in constant time.
@@ -154,19 +144,15 @@ The server logs a loud warning on startup if it binds to a non-loopback interfac
 
 Widgets degrade gracefully if a tool is missing, and report the reason in their JSON response.
 
-| Tool                | Required by                          | Install hint                                                                    |
-| ------------------- | ------------------------------------ | ------------------------------------------------------------------------------- |
-| `lsof`              | PortKiller                           | Debian: `lsof`, NixOS: `pkgs.lsof`                                              |
-| `ss`                | PortScanner local listeners          | ships with `iproute2`                                                           |
-| `ufw` + sudo        | FirewallMonitor (Ubuntu/Debian only) | needs passwordless sudo for `ufw` + log reads (`sudo -n`, fails fast otherwise) |
-| `ollama`            | ChatBot                              | https://ollama.ai                                                               |
-| Docker daemon       | DockerWidget                         | user in `docker` group                                                          |
-| Playwright Chromium | WebScraper                           | `pnpm exec playwright install`                                                  |
+| Tool                | Required by  | Install hint                   |
+| ------------------- | ------------ | ------------------------------ |
+| Docker daemon       | DockerWidget | user in `docker` group         |
+| Playwright Chromium | WebScraper   | `pnpm exec playwright install` |
 
 ### Customization
 
 Open **Settings** (gear icon in the header) to configure the GitHub username,
-weather location, git roots, npm projects, log files, RSS feeds and quick links.
+weather location, dashboard token, sound and git roots.
 Everything is persisted in `localStorage`.
 
 #### Modify Color Theme
@@ -195,13 +181,8 @@ Leitstand/
 │       ├── weather.ts
 │       ├── docker.ts
 │       ├── gitStatus.ts
-│       ├── npmScripts.ts
-│       ├── logAggregator.ts
 │       ├── scraper.ts
-│       ├── netGuard.ts           # SSRF guard (literal + DNS checks)
-│       ├── ufw.ts
-│       ├── ports.ts
-│       └── portKiller.ts
+│       └── netGuard.ts           # SSRF guard (literal + DNS checks)
 ├── src/
 │   ├── components/               # One file per widget (+ Toaster)
 │   │   └── metrics/              # Six metric widgets (CPU, Memory, Graph, VRAM, Storage, Temp)
@@ -215,8 +196,6 @@ Leitstand/
 │   └── main.tsx                  # React entry point
 ├── electron/
 │   └── main.cjs                  # Electron shell (spawns server + vite)
-├── scripts/
-│   └── start-ollama.sh
 ├── .env.example
 ├── eslint.config.js              # ESLint flat config (browser + node blocks)
 ├── tsconfig.server.json          # Backend typecheck (run by pnpm build)
@@ -228,25 +207,19 @@ Leitstand/
 
 ### Backend (`http://localhost:3010`)
 
-| Endpoint                         | Description                                       |
-| -------------------------------- | ------------------------------------------------- |
-| `GET /api/metrics`               | System metrics (CPU, RAM, Disk, VRAM) — cached 2s |
-| `GET /api/weather?location=...`  | Weather from wttr.in                              |
-| `GET /api/docker`                | Docker container status — cached 5s               |
-| `GET /api/firewall/*`            | UFW status, logs, ports, top-attackers            |
-| `GET /api/service-status`        | Aggregated Statuspage.io data                     |
-| `GET /api/connectivity`          | HTTP latency probes                               |
-| `GET /api/ports`                 | Active listening ports                            |
-| `POST /api/ports/kill`           | Kill process by port                              |
-| `GET/POST /api/git/*`            | status, pull, push, fetch, commit, bulk           |
-| `GET/POST /api/npm/*`            | scripts, run, output, stop, running               |
-| `POST /api/logs/*`               | tail, stop, lines, active, clear                  |
-| `POST /api/scrape`               | Playwright scraper (SSRF-guarded)                 |
-| `GET/POST /api/ollama/api/:name` | Proxy to Ollama (whitelisted endpoints)           |
-| `GET /health`                    | Health check                                      |
-| `WebSocket /ws`                  | Real-time metrics stream (2s broadcast)           |
+| Endpoint                        | Description                                       |
+| ------------------------------- | ------------------------------------------------- |
+| `GET /api/metrics`              | System metrics (CPU, RAM, Disk, VRAM) — cached 2s |
+| `GET /api/weather?location=...` | Weather from wttr.in                              |
+| `GET /api/docker`               | Docker container status — cached 5s               |
+| `GET /api/service-status`       | Aggregated Statuspage.io data                     |
+| `GET /api/connectivity`         | HTTP latency probes                               |
+| `GET/POST /api/git/*`           | status, pull, push, fetch, commit, bulk           |
+| `POST /api/scrape`              | Playwright scraper (SSRF-guarded)                 |
+| `GET /health`                   | Health check                                      |
+| `WebSocket /ws`                 | Real-time metrics stream (2s broadcast)           |
 
-All endpoints are rate-limited (1000 req/min general, stricter for scraper and Ollama).
+All endpoints are rate-limited (1000 req/min general, stricter for the scraper).
 When `DASHBOARD_TOKEN` is set, everything under `/api` plus the WebSocket requires the token —
 only `GET /health` stays open.
 
@@ -254,15 +227,11 @@ only `GET /health` stays open.
 
 Widgets degrade gracefully if the underlying tool is missing.
 
-| Widget          | Requires                                                                         |
-| --------------- | -------------------------------------------------------------------------------- |
-| ChatBot         | [Ollama](https://ollama.ai) at `OLLAMA_URL` (default `localhost:11434`)          |
-| WebScraper      | `pnpm exec playwright install` (NixOS: see below)                                |
-| DockerWidget    | Docker daemon socket access                                                      |
-| PortKiller      | `lsof` on PATH                                                                   |
-| PortScanner     | `ss` on PATH                                                                     |
-| FirewallMonitor | UFW (absent on NixOS — widget degrades)                                          |
-| Git/NPM/Logs    | shell out; paths validated server-side (blocked system prefixes, tail allowlist) |
+| Widget       | Requires                                                          |
+| ------------ | ----------------------------------------------------------------- |
+| WebScraper   | `pnpm exec playwright install` (NixOS: see below)                 |
+| DockerWidget | Docker daemon socket access                                       |
+| Git          | shells out; paths validated server-side (blocked system prefixes) |
 
 ### NixOS Note (Playwright)
 
@@ -272,7 +241,7 @@ NixOS doesn't ship standard glibc paths Playwright expects. Use [`playwright-nix
 
 - **Personal homelab dashboard** – Monitor home server, Docker containers, services from one interface.
 - **Developer control center** – Watch resources while running multiple dev environments.
-- **System administration** – Quick overview of system health, ports, firewall, services.
+- **System administration** – Quick overview of system health, containers, services.
 
 ## 🔧 Development
 

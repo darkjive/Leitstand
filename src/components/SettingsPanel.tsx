@@ -5,36 +5,25 @@ import {
   Trash2,
   Volume2,
   Cloud,
-  Bot,
   Github,
   GitBranch,
-  Package,
-  FileText,
-  Rss,
-  Link as LinkIcon,
   Settings as SettingsIcon,
   KeyRound,
 } from 'lucide-react';
 import { getSetting, getSettingJSON, setSetting, setSettingRaw } from '../lib/settings';
 import { getDashboardToken, setDashboardToken } from '../lib/api';
-import type { QuickLink } from './QuickLinks';
 
 interface SettingsPanelProps {
   open: boolean;
   onClose: () => void;
 }
 
-type SectionId = 'general' | 'sound' | 'chatbot' | 'git' | 'npm' | 'logs' | 'rss' | 'links';
+type SectionId = 'general' | 'sound' | 'git';
 
 const SECTIONS: Array<{ id: SectionId; label: string; icon: typeof X }> = [
   { id: 'general', label: 'General', icon: SettingsIcon },
   { id: 'sound', label: 'Sound', icon: Volume2 },
-  { id: 'chatbot', label: 'ChatBot', icon: Bot },
   { id: 'git', label: 'Git Roots', icon: GitBranch },
-  { id: 'npm', label: 'NPM Projects', icon: Package },
-  { id: 'logs', label: 'Log Files', icon: FileText },
-  { id: 'rss', label: 'RSS Feeds', icon: Rss },
-  { id: 'links', label: 'Quick Links', icon: LinkIcon },
 ];
 
 export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
@@ -102,12 +91,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
           <div className="flex-1 overflow-y-auto p-6">
             {section === 'general' && <GeneralSection />}
             {section === 'sound' && <SoundSection />}
-            {section === 'chatbot' && <ChatBotSection />}
             {section === 'git' && <GitSection />}
-            {section === 'npm' && <NpmSection />}
-            {section === 'logs' && <LogsSection />}
-            {section === 'rss' && <RssSection />}
-            {section === 'links' && <LinksSection />}
           </div>
         </div>
       </div>
@@ -213,8 +197,8 @@ function GeneralSection() {
 
       <p className="text-xs text-gray-600">
         GitHub username and weather use public data only. The dashboard token is sent as{' '}
-        <code className="text-accent">X-Dashboard-Token</code> on destructive actions and is
-        only required if you set <code className="text-accent">DASHBOARD_TOKEN</code> on a
+        <code className="text-accent">X-Dashboard-Token</code> on every API request and is only
+        required if you set <code className="text-accent">DASHBOARD_TOKEN</code> on a
         LAN-exposed backend.
       </p>
     </div>
@@ -277,45 +261,6 @@ function SoundSection() {
           className="w-full accent-accent"
         />
       </Field>
-    </div>
-  );
-}
-
-// ============================================================
-// ChatBot
-// ============================================================
-
-function ChatBotSection() {
-  const [model, setModel] = useState(() => getSetting('chatbot-model', ''));
-
-  return (
-    <div className="space-y-6 max-w-md">
-      <SectionHeader
-        title="CHATBOT"
-        hint="Default Ollama model. Leave empty to auto-pick the first chat-capable model."
-      />
-
-      <Field label="DEFAULT MODEL">
-        <div className="flex items-center gap-2">
-          <Bot className="w-4 h-4 text-gray-500 shrink-0" />
-          <input
-            type="text"
-            value={model}
-            onChange={e => setModel(e.target.value)}
-            onBlur={() => setSettingRaw('chatbot-model', model.trim())}
-            onKeyDown={e => {
-              if (e.key === 'Enter') setSettingRaw('chatbot-model', model.trim());
-            }}
-            placeholder="e.g. llama3.1:8b"
-            className={inputClass}
-          />
-        </div>
-      </Field>
-
-      <p className="text-xs text-gray-600">
-        Ollama must be running (default <code className="text-accent">localhost:11434</code>).
-        The dropdown inside the ChatBot widget still lets you switch per-session.
-      </p>
     </div>
   );
 }
@@ -414,190 +359,6 @@ function GitSection() {
               onChange={e => replace(e.target.value)}
               placeholder="/home/user/projects"
               className={inputClass}
-            />
-          </div>
-        )}
-      />
-    </div>
-  );
-}
-
-// ============================================================
-// NPM Projects ([{name, path}])
-// ============================================================
-
-interface NpmProject {
-  name: string;
-  path: string;
-}
-
-function NpmSection() {
-  return (
-    <div className="space-y-4 max-w-2xl">
-      <SectionHeader title="NPM PROJECTS" hint="Projects shown in the NPM Script Runner widget." />
-      <ListEditor<NpmProject>
-        storageKey="npm-projects"
-        defaultItems={[]}
-        emptyLabel="No NPM projects configured."
-        addLabel="Add project"
-        buildNew={() => ({ name: '', path: '' })}
-        renderItem={(p, replace) => (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <input
-              type="text"
-              value={p.name}
-              onChange={e => replace({ ...p, name: e.target.value })}
-              placeholder="Project name"
-              className={inputClass}
-            />
-            <input
-              type="text"
-              value={p.path}
-              onChange={e => replace({ ...p, path: e.target.value })}
-              placeholder="/absolute/path/to/project"
-              className={inputClass}
-            />
-          </div>
-        )}
-      />
-    </div>
-  );
-}
-
-// ============================================================
-// Log Files ([{id, name, path}])
-// ============================================================
-
-interface LogConfig {
-  id: string;
-  name: string;
-  path: string;
-}
-
-function LogsSection() {
-  return (
-    <div className="space-y-4 max-w-2xl">
-      <SectionHeader title="LOG FILES" hint="Log file definitions used by the Log Aggregator." />
-      <ListEditor<LogConfig>
-        storageKey="log-configs"
-        defaultItems={[]}
-        emptyLabel="No log files configured."
-        addLabel="Add log file"
-        buildNew={() => ({
-          id: `log-${Date.now()}`,
-          name: '',
-          path: '',
-        })}
-        renderItem={(l, replace) => (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <input
-              type="text"
-              value={l.name}
-              onChange={e => replace({ ...l, name: e.target.value })}
-              placeholder="Display name"
-              className={inputClass}
-            />
-            <input
-              type="text"
-              value={l.path}
-              onChange={e => replace({ ...l, path: e.target.value })}
-              placeholder="/var/log/foo.log"
-              className={inputClass}
-            />
-          </div>
-        )}
-      />
-    </div>
-  );
-}
-
-// ============================================================
-// RSS Feeds ([{id, name, url}])
-// ============================================================
-
-interface RssFeed {
-  id: string;
-  name: string;
-  url: string;
-}
-
-function RssSection() {
-  return (
-    <div className="space-y-4 max-w-2xl">
-      <SectionHeader title="RSS FEEDS" hint="Feeds available in the Custom RSS widget." />
-      <ListEditor<RssFeed>
-        storageKey="custom-rss-feeds"
-        defaultItems={[]}
-        emptyLabel="No RSS feeds configured."
-        addLabel="Add feed"
-        buildNew={() => ({
-          id: `feed-${Date.now()}`,
-          name: '',
-          url: '',
-        })}
-        renderItem={(f, replace) => (
-          <div className="grid grid-cols-1 sm:grid-cols-[1fr_2fr] gap-2">
-            <input
-              type="text"
-              value={f.name}
-              onChange={e => replace({ ...f, name: e.target.value })}
-              placeholder="Feed name"
-              className={inputClass}
-            />
-            <input
-              type="url"
-              value={f.url}
-              onChange={e => replace({ ...f, url: e.target.value })}
-              placeholder="https://example.com/rss"
-              className={inputClass}
-            />
-          </div>
-        )}
-      />
-    </div>
-  );
-}
-
-// ============================================================
-// Quick Links (simplified editor)
-// ============================================================
-
-function LinksSection() {
-  return (
-    <div className="space-y-4 max-w-2xl">
-      <SectionHeader
-        title="QUICK LINKS"
-        hint="Bookmarks shown in the Quick Links widget. Use the in-widget editor for advanced fields."
-      />
-      <ListEditor<QuickLink>
-        storageKey="quick-links"
-        defaultItems={[]}
-        emptyLabel="No quick links configured."
-        addLabel="Add link"
-        buildNew={() => ({
-          // id is required — QuickLinks discards the whole list if any entry lacks it
-          id: `link-${Date.now()}`,
-          name: '',
-          url: '',
-          iconType: 'lucide',
-          iconName: 'Globe',
-          color: 'text-cyan-400',
-        })}
-        renderItem={(l, replace) => (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <input
-              type="text"
-              value={l.name}
-              onChange={e => replace({ ...l, name: e.target.value })}
-              placeholder="Name"
-              className={inputClass}
-            />
-            <input
-              type="url"
-              value={l.url}
-              onChange={e => replace({ ...l, url: e.target.value })}
-              placeholder="https://"
-              className={`sm:col-span-2 ${inputClass}`}
             />
           </div>
         )}
