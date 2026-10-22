@@ -46,7 +46,13 @@ export async function getDockerInfo(): Promise<DockerInfo> {
         status: c.status || '',
         created: c.created || 0,
         started: c.started || 0,
-        ports: c.ports || [],
+        // Docker API returns port objects; the widget shows "public->private/type".
+        ports: (c.ports || []).map(
+          (p: { PrivatePort: number; PublicPort?: number; Type: string }) =>
+            p.PublicPort
+              ? `${p.PublicPort}->${p.PrivatePort}/${p.Type}`
+              : `${p.PrivatePort}/${p.Type}`
+        ),
         mounts: c.mounts || [],
         cpu: c.cpuPercent || undefined,
         memory: c.memPercent || undefined,
