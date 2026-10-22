@@ -21,30 +21,30 @@ export function MetricsGraphWidget() {
     >
       {() => (
         <div className="space-y-2 h-full flex flex-col">
-          <div className="flex-1 min-h-[180px]">
+          <div className="flex-1 min-h-45">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={history}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(212, 165, 116, 0.1)" />
-                <XAxis dataKey="time" stroke="rgba(212, 165, 116, 0.5)" />
-                <YAxis stroke="rgba(212, 165, 116, 0.5)" domain={[0, 100]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis dataKey="time" stroke="var(--text-dim)" />
+                <YAxis stroke="var(--text-dim)" domain={[0, 100]} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#161b22',
-                    border: '1px solid rgba(212, 165, 116, 0.2)',
-                    borderRadius: '8px',
+                    backgroundColor: 'var(--bg-elevated)',
+                    border: '1px solid var(--border-strong)',
+                    borderRadius: 'var(--r-md)',
                   }}
                 />
                 <Line
                   type="monotone"
                   dataKey="cpu"
-                  stroke="#d4a574"
+                  stroke="var(--accent)"
                   strokeWidth={2}
                   dot={false}
                 />
                 <Line
                   type="monotone"
                   dataKey="memory"
-                  stroke="#e8b985"
+                  stroke="var(--accent-bright)"
                   strokeWidth={2}
                   dot={false}
                 />

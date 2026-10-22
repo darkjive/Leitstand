@@ -28,6 +28,7 @@ const MAX_WS_FAILS = 3;
 const WS_TIMEOUT_MS = 5000;
 const WS_RECONNECT_MS = 5000;
 const POLL_INTERVAL_MS = 2000;
+const WS_RETRY_WHILE_POLLING_MS = 30000;
 
 let state: MetricsState = {
   metrics: null,
@@ -41,6 +42,7 @@ const listeners = new Set<() => void>();
 let initialized = false;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 let pollingTimer: ReturnType<typeof setInterval> | null = null;
+let wsRetryTimer: ReturnType<typeof setTimeout> | null = null;
 let wsFailCount = 0;
 let ws: WebSocket | null = null;
 let connectTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -71,24 +73,49 @@ function pushSample(metrics: MetricsData) {
   notify();
 }
 
+// While polling, the socket status must not override what polling reports.
+function patchWsStatus(p: Partial<MetricsState>) {
+  if (!pollingTimer) patch(p);
+}
+
+function stopPolling() {
+  if (pollingTimer) {
+    clearInterval(pollingTimer);
+    pollingTimer = null;
+  }
+  if (wsRetryTimer) {
+    clearTimeout(wsRetryTimer);
+    wsRetryTimer = null;
+  }
+}
+
 function startPolling() {
-  if (pollingTimer) return;
-  patch({ status: 'connected', loading: false });
+  if (!pollingTimer) {
+    const fetchMetrics = async () => {
+      try {
+        const res = await apiFetch('/api/metrics');
+        if (!res.ok) throw new Error('HTTP error');
+        const data: MetricsData = await res.json();
+        if (!data.cpu || !data.memory) return;
+        pushSample(data);
+      } catch {
+        patch({ status: 'disconnected', loading: false, error: 'Cannot reach metrics service' });
+      }
+    };
 
-  const fetchMetrics = async () => {
-    try {
-      const res = await apiFetch('/api/metrics');
-      if (!res.ok) throw new Error('HTTP error');
-      const data: MetricsData = await res.json();
-      if (!data.cpu || !data.memory) return;
-      pushSample(data);
-    } catch {
-      patch({ error: 'Cannot reach metrics service' });
-    }
-  };
+    fetchMetrics();
+    pollingTimer = setInterval(fetchMetrics, POLL_INTERVAL_MS);
+  }
 
-  fetchMetrics();
-  pollingTimer = setInterval(fetchMetrics, POLL_INTERVAL_MS);
+  // Keep polling, but give the WebSocket one more chance now and then;
+  // onopen stops polling again.
+  if (!wsRetryTimer) {
+    wsRetryTimer = setTimeout(() => {
+      wsRetryTimer = null;
+      wsFailCount = MAX_WS_FAILS - 1;
+      connectWebSocket();
+    }, WS_RETRY_WHILE_POLLING_MS);
+  }
 }
 
 function connectWebSocket() {
@@ -97,7 +124,7 @@ function connectWebSocket() {
     return;
   }
 
-  patch({ status: 'connecting' });
+  patchWsStatus({ status: 'connecting' });
 
   const wsProto = window.location.protocol === 'https:' ? 'wss' : 'ws';
   const wsUrl = wsUrlWithToken(`${wsProto}://${window.location.host}/ws`);
@@ -130,6 +157,7 @@ function connectWebSocket() {
     openHandled = true;
     if (connectTimeout) clearTimeout(connectTimeout);
     wsFailCount = 0;
+    stopPolling();
     patch({ status: 'connected', loading: false, error: null });
   };
 
@@ -146,13 +174,13 @@ function connectWebSocket() {
   ws.onerror = () => {
     if (!openHandled) {
       countFailure();
-      patch({ status: 'disconnected', error: 'WebSocket connection failed' });
+      patchWsStatus({ status: 'disconnected', error: 'WebSocket connection failed' });
     }
   };
 
   ws.onclose = () => {
     if (connectTimeout) clearTimeout(connectTimeout);
-    patch({ status: 'disconnected' });
+    patchWsStatus({ status: 'disconnected' });
     countFailure();
     scheduleReconnectOrPoll();
   };
@@ -180,10 +208,7 @@ function teardown() {
     clearTimeout(reconnectTimer);
     reconnectTimer = null;
   }
-  if (pollingTimer) {
-    clearInterval(pollingTimer);
-    pollingTimer = null;
-  }
+  stopPolling();
   if (connectTimeout) {
     // A stale timer would close the NEXT socket (React StrictMode mounts twice)
     clearTimeout(connectTimeout);

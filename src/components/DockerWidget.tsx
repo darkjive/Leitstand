@@ -104,7 +104,7 @@ export function DockerWidget() {
                   ) : (
                     <Square className="w-4 h-4 text-red-400" />
                   )}
-                  <div className="font-mono text-sm font-bold text-accent truncate max-w-[200px]">
+                  <div className="font-mono text-sm font-bold text-accent truncate max-w-52">
                     {container.name}
                   </div>
                 </div>

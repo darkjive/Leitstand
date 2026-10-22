@@ -372,9 +372,13 @@ function App() {
     return stacked;
   }, [layout]);
 
+  // react-grid-layout only reports items of mounted (enabled) widgets; keep the
+  // last position of disabled ones so re-enabling restores it.
   const saveLayout = (newLayout: ReadonlyArray<LayoutItem>) => {
-    setLayout(newLayout as LayoutItem[]);
-    localStorage.setItem('dashboard-layout', JSON.stringify(newLayout));
+    const ids = new Set(newLayout.map(item => item.i));
+    const merged = [...newLayout, ...layout.filter(item => !ids.has(item.i))];
+    setLayout(merged);
+    localStorage.setItem('dashboard-layout', JSON.stringify(merged));
   };
 
   const resetLayout = () => {
@@ -531,6 +535,8 @@ function App() {
             return (
               <div
                 key={id}
+                // Grid falls back to this for a re-enabled widget it no longer tracks
+                data-grid={layout.find(item => item.i === id)}
                 className={isDragging ? 'dragging' : ''}
                 style={{ pointerEvents: 'auto' }}
               >

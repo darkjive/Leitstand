@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   ArrowUp,
   ArrowDown,
@@ -149,37 +149,44 @@ export function GitStatus() {
   } | null>(null);
 
   // ---- scanning ----
+  // Roots being typed in SettingsPanel arrive per keystroke; skip blanks and
+  // drop responses of superseded scans.
+  const scanRoots = useMemo(() => roots.map(r => r.trim()).filter(Boolean), [roots]);
+  const scanSeq = useRef(0);
   const scan = useCallback(async () => {
-    if (roots.length === 0) return;
+    if (scanRoots.length === 0) return;
+    const seq = ++scanSeq.current;
     setScanning(true);
     setScanError(null);
     try {
       const res = await apiFetch('/api/git/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roots }),
+        body: JSON.stringify({ roots: scanRoots }),
       });
       const data = await res.json();
+      if (seq !== scanSeq.current) return;
       if (!res.ok) throw new Error(data.error || 'Scan failed');
       setRepos(data.repos as RepoSummary[]);
       setLastScan(Date.now());
     } catch (err) {
-      setScanError(err instanceof Error ? err.message : 'Scan failed');
+      if (seq === scanSeq.current) setScanError(err instanceof Error ? err.message : 'Scan failed');
     } finally {
-      setScanning(false);
+      if (seq === scanSeq.current) setScanning(false);
     }
-  }, [roots]);
+  }, [scanRoots]);
 
   useEffect(() => {
-    scan();
+    const id = setTimeout(scan, 500);
+    return () => clearTimeout(id);
   }, [scan]);
 
   // periodic rescan (lightweight, doesn't auto-fetch)
   useEffect(() => {
-    if (roots.length === 0) return;
+    if (scanRoots.length === 0) return;
     const id = setInterval(() => scan(), 30000);
     return () => clearInterval(id);
-  }, [roots, scan]);
+  }, [scanRoots, scan]);
 
   // ---- root management ----
   const addRoot = () => {
@@ -197,23 +204,29 @@ export function GitStatus() {
   };
 
   // ---- detail ----
+  // Only the latest request may write: a slow response for a previously
+  // expanded repo must not overwrite the current one.
+  const detailSeq = useRef(0);
   const loadDetail = useCallback(async (path: string) => {
+    const seq = ++detailSeq.current;
     setDetailLoading(true);
     try {
       const res = await apiFetch(`/api/git/status?path=${encodeURIComponent(path)}`);
       const data = await res.json();
-      setDetail(data);
+      if (seq === detailSeq.current) setDetail(data);
     } catch {
-      setDetail(null);
+      if (seq === detailSeq.current) setDetail(null);
     } finally {
-      setDetailLoading(false);
+      if (seq === detailSeq.current) setDetailLoading(false);
     }
   }, []);
 
   const toggleExpand = (path: string) => {
     if (expanded === path) {
+      detailSeq.current++;
       setExpanded(null);
       setDetail(null);
+      setDetailLoading(false);
       setShowCommitInput(false);
     } else {
       setExpanded(path);
@@ -329,7 +342,7 @@ export function GitStatus() {
   const runBulkCommit = async () => {
     if (!bulkCommitMsg.trim()) return;
     const items = filteredRepos
-      .filter(r => r.changedFiles > 0)
+      .filter(r => r.changedFiles > 0 && r.state !== 'conflict' && r.state !== 'error')
       .map(r => ({ path: r.path, message: bulkCommitMsg }));
     if (items.length === 0) {
       toast('No repos with changes to commit', 'info');
@@ -425,7 +438,7 @@ export function GitStatus() {
           {roots.map(r => (
             <span
               key={r}
-              className="inline-flex items-center gap-1 px-2 py-0.5 bg-elevated border border-line rounded text-xs text-gray-400 font-mono max-w-[140px] truncate"
+              className="inline-flex items-center gap-1 px-2 py-0.5 bg-elevated border border-line rounded text-xs text-gray-400 font-mono max-w-36 truncate"
               title={r}
             >
               {r.split('/').pop() || r}

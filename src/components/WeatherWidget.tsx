@@ -7,6 +7,7 @@ import { apiFetch } from '../lib/api';
 export function WeatherWidget({ location: initialLocation = 'Munich' }: { location?: string }) {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   // Persisted + synced with SettingsPanel automatically
   const [location, setLocation] = useSetting('weather-location', initialLocation);
   const [editingLocation, setEditingLocation] = useState(false);
@@ -22,10 +23,17 @@ export function WeatherWidget({ location: initialLocation = 'Munich' }: { locati
       try {
         const res = await apiFetch(`/api/weather?location=${encodeURIComponent(location)}`);
         const data = await res.json();
-        setWeather(data);
+        if (!res.ok) {
+          setWeather(null);
+          setError(data.error || `HTTP ${res.status}`);
+        } else {
+          setWeather(data);
+          setError(null);
+        }
         setLoading(false);
       } catch (error) {
         console.error('Failed to fetch weather:', error);
+        setError(null);
         setLoading(false);
       }
     };
@@ -48,7 +56,7 @@ export function WeatherWidget({ location: initialLocation = 'Munich' }: { locati
   if (!weather || !weather.current_condition || !weather.current_condition[0]) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-red-500">Weather data unavailable</div>
+        <div className="text-red-500">Weather data unavailable{error ? `: ${error}` : ''}</div>
       </div>
     );
   }

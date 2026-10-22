@@ -119,7 +119,7 @@ export function WebScraper() {
             className="flex-1"
             disabled={loading}
           />
-          <div className="text-right min-w-[120px]">
+          <div className="text-right min-w-30">
             <div className="text-sm font-bold text-accent">
               {depth} level{depth > 1 ? 's' : ''}
             </div>

@@ -6,14 +6,19 @@ import { readFile, readdir } from 'fs/promises';
 import type { MetricsData, VramGpu } from '../../shared/types.js';
 
 const execFileAsync = promisify(execFile);
+const EXEC_TIMEOUT_MS = 5000;
+// Upper bound for one full scan; a hung si call (e.g. after a GPU driver reset)
+// must not pin `inflight` forever.
+const FETCH_TIMEOUT_MS = 8000;
 
 // Query NVIDIA GPUs via nvidia-smi. Returns one entry per GPU with used/total.
 async function getVramFromNvidia(): Promise<VramGpu[]> {
   try {
-    const { stdout } = await execFileAsync('nvidia-smi', [
-      '--query-gpu=name,memory.total,memory.used',
-      '--format=csv,noheader,nounits',
-    ]);
+    const { stdout } = await execFileAsync(
+      'nvidia-smi',
+      ['--query-gpu=name,memory.total,memory.used', '--format=csv,noheader,nounits'],
+      { timeout: EXEC_TIMEOUT_MS }
+    );
     return stdout
       .trim()
       .split('\n')
@@ -75,8 +80,8 @@ async function getVramFromAmdgpu(): Promise<VramGpu[]> {
 async function getVramFromRocmSmi(): Promise<VramGpu[]> {
   try {
     const [memRes, nameRes] = await Promise.allSettled([
-      execFileAsync('rocm-smi', ['--showmeminfo', 'vram', '--json']),
-      execFileAsync('rocm-smi', ['--showproductname', '--json']),
+      execFileAsync('rocm-smi', ['--showmeminfo', 'vram', '--json'], { timeout: EXEC_TIMEOUT_MS }),
+      execFileAsync('rocm-smi', ['--showproductname', '--json'], { timeout: EXEC_TIMEOUT_MS }),
     ]);
     if (memRes.status !== 'fulfilled') return [];
     const vramData = JSON.parse(memRes.value.stdout) as Record<string, Record<string, string>>;
@@ -175,13 +180,14 @@ export async function getSystemMetrics(): Promise<MetricsData> {
 
 async function fetchSystemMetrics(): Promise<MetricsData> {
   try {
-    const [cpu, mem, disk, temp, vram] = await Promise.all([
-      si.currentLoad(),
-      si.mem(),
-      si.fsSize(),
-      si.cpuTemperature(),
-      getVram(),
-    ]);
+    let timer: NodeJS.Timeout | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error('Metrics scan timed out')), FETCH_TIMEOUT_MS);
+    });
+    const [cpu, mem, disk, temp, vram] = await Promise.race([
+      Promise.all([si.currentLoad(), si.mem(), si.fsSize(), si.cpuTemperature(), getVram()]),
+      timeout,
+    ]).finally(() => clearTimeout(timer));
 
     // Detect if temperature sensors are available
     const tempAvailable = temp.main !== null && temp.main > 0;

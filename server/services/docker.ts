@@ -22,12 +22,16 @@ export async function getDockerInfo(): Promise<DockerInfo> {
       const containers = await si.dockerContainers(true);
 
       if (!containers || containers.length === 0) {
+        // si returns [] both for "no containers" and "daemon unreachable";
+        // dockerInfo() yields {} (no id) in the latter case.
+        const daemon = await si.dockerInfo();
         const emptyInfo: DockerInfo = {
           containers: [],
           running: 0,
           stopped: 0,
           total: 0,
-          available: true,
+          available: Boolean(daemon.id),
+          ...(daemon.id ? {} : { error: 'Docker daemon not reachable' }),
         };
         lastFetch = { data: emptyInfo, timestamp: Date.now() };
         return emptyInfo;

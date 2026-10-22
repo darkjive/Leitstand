@@ -34,7 +34,7 @@ export function MetricsShell({ title, icon, children }: MetricsShellProps) {
           }
         />
         <span
-          className="text-[10px] font-mono uppercase tracking-wider text-gray-400"
+          className="text-xs font-mono uppercase tracking-wider text-gray-400"
           aria-live="polite"
         >
           {status === 'connected' ? 'LIVE' : status === 'connecting' ? 'CONNECTING' : 'OFFLINE'}

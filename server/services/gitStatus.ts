@@ -471,6 +471,18 @@ export async function bulkCommit(
   items: { path: string; message: string }[]
 ): Promise<BulkResultItem[]> {
   return mapLimit(items, BULK_CONCURRENCY, async it => {
+    // `git add .` would mark unmerged files as resolved and commit the conflict markers
+    const { stdout: unmerged } = await execAsync('git diff --name-only --diff-filter=U', {
+      cwd: it.path,
+    }).catch(() => ({ stdout: '' }));
+    if (unmerged.trim()) {
+      return {
+        path: it.path,
+        name: nameOf(it.path),
+        success: false,
+        message: 'Unresolved merge conflict, skipped',
+      };
+    }
     const r = await gitCommit(it.message, it.path);
     return { path: it.path, name: nameOf(it.path), success: r.success, message: r.message };
   });

@@ -1,10 +1,6 @@
 import { MemoryStick } from 'lucide-react';
 import { MetricsShell } from './MetricsShell';
-
-function formatMb(mb: number) {
-  if (mb >= 1024) return `${(mb / 1024).toFixed(2)} GB`;
-  return `${mb} MB`;
-}
+import { formatMb } from '../../lib/format';
 
 export function VramWidget() {
   return (

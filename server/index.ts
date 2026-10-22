@@ -221,7 +221,7 @@ app.get('/api/weather', generalLimiter, async (req, res) => {
       .string()
       .min(1)
       .max(100)
-      .regex(/^[a-zA-Z0-9\s,.-]+$/);
+      .regex(/^[\p{L}\p{N}\s,.'-]+$/u);
     const location = locationSchema.parse((req.query.location as string) || 'Munich');
 
     const weather = await getWeather(location);
