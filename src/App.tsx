@@ -463,8 +463,8 @@ function App() {
         className="border-b border-line backdrop-blur-sm sticky top-0 z-50"
         style={{ backgroundColor: 'var(--color-bg)' }}
       >
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
+        <div className="px-3 py-3 md:px-6 md:py-4">
+          <div className="flex items-center justify-between gap-2">
             <div className="ds-brand">
               <img src="/favicon.svg" alt="" />
               <h1>Leitstand</h1>
@@ -488,25 +488,30 @@ function App() {
                 <Settings className="w-4 h-4" />
                 <span className="hidden sm:inline">Settings</span>
               </button>
-              <button
-                onClick={manualSave}
-                className={`ds-btn ${showSaved ? 'text-good' : ''}`}
-                title="Save Layout"
-              >
-                <Save className="w-4 h-4" />
-                <span className="hidden sm:inline">{showSaved ? 'Saved!' : 'Save'}</span>
-              </button>
-              <button onClick={resetLayout} className="ds-btn" title="Reset Layout to Default">
-                <RotateCcw className="w-4 h-4" />
-                <span className="hidden sm:inline">Reset</span>
-              </button>
+              {/* Layout actions only where the layout can be edited (not in the fixed phone view) */}
+              {!isMobile && (
+                <>
+                  <button
+                    onClick={manualSave}
+                    className={`ds-btn ${showSaved ? 'text-good' : ''}`}
+                    title="Save Layout"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span className="hidden sm:inline">{showSaved ? 'Saved!' : 'Save'}</span>
+                  </button>
+                  <button onClick={resetLayout} className="ds-btn" title="Reset Layout to Default">
+                    <RotateCcw className="w-4 h-4" />
+                    <span className="hidden sm:inline">Reset</span>
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
           {showWidgetControls && (
             <div className="mt-4 pt-4 border-t border-line space-y-4">
               <div>
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                   <h3 className="text-sm font-bold text-accent">WIDGET VISIBILITY</h3>
                   <div className="flex items-center gap-4 text-xs text-gray-400">
                     <div className="flex items-center gap-1">
