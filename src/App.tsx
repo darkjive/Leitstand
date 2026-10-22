@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import GridLayout from 'react-grid-layout/legacy';
 import { CpuWidget } from './components/metrics/CpuWidget';
 import { MemoryWidget } from './components/metrics/MemoryWidget';
@@ -116,6 +116,11 @@ const defaultLayout = [
   // Row 9: Firewall monitor (rule list needs room)
   { i: 'firewall-monitor', x: 0, y: 36, w: 12, h: 6, minW: 6, minH: 6 },
 ];
+
+// Below this width the grid collapses to one column (phones via the Pforte gateway).
+const MOBILE_BREAKPOINT = 768;
+// Page padding: px-3 on phones, px-6 above; the grid width must match.
+const gridWidth = (viewport: number) => viewport - (viewport < MOBILE_BREAKPOINT ? 24 : 48);
 
 const defaultEnabledWidgets = {
   'metrics-cpu': true,
@@ -347,7 +352,7 @@ function App() {
   const [showWidgetControls, setShowWidgetControls] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
   const [containerWidth, setContainerWidth] = useState(
-    typeof window !== 'undefined' ? window.innerWidth - 48 : 2500
+    typeof window !== 'undefined' ? gridWidth(window.innerWidth) : 2500
   );
 
   // Persisted + synced with SettingsPanel automatically
@@ -412,6 +417,25 @@ function App() {
     setTimeout(() => setShowSaved(false), 2000);
   };
 
+  const isMobile = containerWidth < MOBILE_BREAKPOINT - 24;
+  // Phones: one column in desktop reading order (row by row, left to right), fixed in
+  // place. Derived on the fly and never saved, so the desktop layout stays untouched.
+  const mobileLayout = useMemo(() => {
+    const stacked: LayoutItem[] = [];
+    for (const item of [...layout].sort((a, b) => a.y - b.y || a.x - b.x)) {
+      const prev = stacked.at(-1);
+      stacked.push({
+        ...item,
+        x: 0,
+        y: prev ? prev.y + prev.h : 0,
+        w: 1,
+        minW: 1,
+        h: Math.max(item.h, 3),
+      });
+    }
+    return stacked;
+  }, [layout]);
+
   const saveLayout = (newLayout: ReadonlyArray<LayoutItem>) => {
     setLayout(newLayout as LayoutItem[]);
     localStorage.setItem('dashboard-layout', JSON.stringify(newLayout));
@@ -426,7 +450,7 @@ function App() {
 
   useEffect(() => {
     const handleResize = () => {
-      setContainerWidth(window.innerWidth - 48);
+      setContainerWidth(gridWidth(window.innerWidth));
     };
 
     window.addEventListener('resize', handleResize);
@@ -472,11 +496,7 @@ function App() {
                 <Save className="w-4 h-4" />
                 <span className="hidden sm:inline">{showSaved ? 'Saved!' : 'Save'}</span>
               </button>
-              <button
-                onClick={resetLayout}
-                className="ds-btn"
-                title="Reset Layout to Default"
-              >
+              <button onClick={resetLayout} className="ds-btn" title="Reset Layout to Default">
                 <RotateCcw className="w-4 h-4" />
                 <span className="hidden sm:inline">Reset</span>
               </button>
@@ -546,19 +566,19 @@ function App() {
       <SettingsPanel open={showSettings} onClose={() => setShowSettings(false)} />
       <Toaster />
 
-      <div className="px-6 py-6">
+      <div className="px-3 py-3 md:px-6 md:py-6">
         <GridLayout
           className="layout"
-          layout={layout}
-          cols={12}
-          rowHeight={containerWidth < 768 ? 80 : 120}
+          layout={isMobile ? mobileLayout : layout}
+          cols={isMobile ? 1 : 12}
+          rowHeight={isMobile ? 80 : 120}
           width={containerWidth}
-          onLayoutChange={saveLayout}
+          onLayoutChange={isMobile ? undefined : saveLayout}
           onDragStart={() => setIsDragging(true)}
           onDragStop={() => setIsDragging(false)}
           draggableHandle=".drag-handle"
-          isDraggable={true}
-          isResizable={true}
+          isDraggable={!isMobile}
+          isResizable={!isMobile}
           compactType="vertical"
           preventCollision={false}
         >
@@ -577,7 +597,10 @@ function App() {
                   <div className="text-xs font-bold text-gray-400 flex items-center gap-1.5">
                     <config.icon size={12} />
                     {config.name}
-                    <Move size={12} className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Move
+                      size={12}
+                      className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity"
+                    />
                   </div>
                 </div>
                 <div
