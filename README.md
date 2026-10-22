@@ -1,6 +1,6 @@
 # 🚀 Leitstand
 
-**Dev Control** — futuristisches Dashboard mit Live-Systemmonitoring und Cyberpunk-Optik.
+**Dev-Dashboard** für den Arbeitsrechner: Systemlast, Git-Repos, Docker und Dienst-Status auf einen Blick.
 
 <p align="center">
   <img src="https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
 </p>
 
-> **Developer dashboard for your workstation: live system metrics, Git repos, Docker containers and service status in one view — with cyberpunk aesthetics inspired by pxlngn.net**
+> **Developer dashboard for your workstation: live system metrics, Git repos, Docker containers and service status in one view**
 
 <p align="center">
   <img src="docs/screenshot.png" alt="Leitstand dashboard on desktop" width="72%" />
@@ -39,14 +39,12 @@
 | **Markdown Editor** | `localStorage`                                                                                                                            |
 | **Sound Manager**   | `<audio>` loop — drop a file at `public/audio/ambiance-legal.ogg` (not shipped in the repo); the widget shows a disabled state without it |
 
-### 🎨 Cyberpunk Design
+### Design
 
-- **Cyan/Orange Gradient Palette** (pxlngn.net inspired)
-- **Animated Scan Line Effect** (retro terminal vibe)
-- **Glowing Text Effects** (cyberpunk aesthetics)
-- **Responsive Grid Layout** (drag & resize widgets)
-- **Custom Scrollbars** (themed for immersion)
-- **Blinking Cursor Animation** ("INITIALIZING..." effect)
+- **Shared design system**: colors, type scale, spacing and `ds-` components come from a shared Designsystem used by all my internal apps (a private sibling checkout at `../Designsystem`)
+- **Drag & resize grid** on desktop, saved per browser
+- **Single-column phone view** below 768px, in desktop reading order
+- **Widget visibility panel** with a live health status per widget
 
 ## 🛠️ Tech Stack
 
@@ -155,18 +153,11 @@ Open **Settings** (gear icon in the header) to configure the GitHub username,
 weather location, dashboard token, sound and git roots.
 Everything is persisted in `localStorage`.
 
-#### Modify Color Theme
+#### Colors and styles
 
-Tailwind 4 is configured via CSS. Edit the `@theme {}` block in `src/index.css`:
-
-```css
-@theme {
-  --color-cyber-cyan: rgb(0, 195, 255);
-  --color-cyber-orange: rgb(255, 135, 0);
-  --color-cyber-darkbg: #0a0e27;
-  --color-cyber-cardbg: #151a2e;
-}
-```
+Colors, font sizes, spacing and radii are tokens from the shared Designsystem
+(`src/index.css` imports `../Designsystem/*.css`). Change them there, not in this app;
+app-specific Tailwind settings and keyframes live in the `@theme {}` block of `src/index.css`.
 
 ## 📁 Project Structure
 
@@ -192,7 +183,7 @@ Leitstand/
 │   │   ├── api.ts                # apiFetch wrapper (attaches optional dashboard token)
 │   │   └── toast.ts              # toast() notifications
 │   ├── App.tsx                   # Main dashboard grid layout
-│   ├── index.css                 # Tailwind + cyberpunk theme
+│   ├── index.css                 # Tailwind + Designsystem imports
 │   └── main.tsx                  # React entry point
 ├── electron/
 │   └── main.cjs                  # Electron shell (spawns server + vite)
@@ -257,16 +248,6 @@ pnpm desktop:prod  # vite build, then Electron loads backend-served bundle on :3
 
 No test framework or CI is set up — `pnpm build` + `pnpm lint` are the verification gates.
 
-## 🎨 Design Inspiration
-
-Heavily inspired by **[pxlngn.net](https://pxlngn-net.vercel.app)**:
-
-- Cyan/Orange gradient palette (`rgb(0, 195, 255)` + `rgb(255, 135, 0)`)
-- JetBrains Mono typography
-- Blinking cursor animation ("INITIALIZING..." effect)
-- Scan line effect (retro terminal aesthetic)
-- Glowing text shadows (cyberpunk neon)
-
 ## 📄 License
 
 MIT — see [LICENSE](LICENSE).
@@ -274,12 +255,5 @@ MIT — see [LICENSE](LICENSE).
 ## 🙏 Acknowledgments
 
 - **[Homepage by gethomepage](https://github.com/gethomepage/homepage)** - Dashboard structure inspiration
-- **[pxlngn.net](https://pxlngn-net.vercel.app)** - Design aesthetics and color palette
 - **[wttr.in](https://wttr.in)** - Weather data API
 - **[systeminformation](https://github.com/sebhildebrandt/systeminformation)** - System metrics library
-
----
-
-<p align="center">
-  Built with <span style="color: rgb(0, 195, 255)">Cyan</span> and <span style="color: rgb(255, 135, 0)">Orange</span> 🚀
-</p>
