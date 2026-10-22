@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
 </p>
 
-> **Futuristic homelab dashboard with real-time system monitoring and cyberpunk aesthetics inspired by pxlngn.net**
+> **Developer dashboard for your workstation: live system metrics, Git repos, Docker containers and service status in one view — with cyberpunk aesthetics inspired by pxlngn.net**
 
 <p align="center">
   <img src="docs/screenshot.png" alt="Leitstand dashboard on desktop" width="72%" />
@@ -239,9 +239,9 @@ NixOS doesn't ship standard glibc paths Playwright expects. Use [`playwright-nix
 
 ## 🎯 Use Cases
 
-- **Personal homelab dashboard** – Monitor home server, Docker containers, services from one interface.
-- **Developer control center** – Watch resources while running multiple dev environments.
-- **System administration** – Quick overview of system health, containers, services.
+- **Developer control center** – Watch CPU, memory, VRAM and temperature while builds, dev servers and local models run.
+- **Repo overview** – See dirty, ahead and behind repos across your project folders and pull, push or commit in bulk.
+- **Local stack at a glance** – Check Docker containers, connectivity and upstream service status (GitHub, Vercel, Anthropic, …) without leaving the dashboard.
 
 ## 🔧 Development
 
