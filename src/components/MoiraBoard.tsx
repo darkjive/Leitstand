@@ -479,6 +479,22 @@ export function MoiraBoard() {
                         {t.number} · {t.created}
                       </span>
                       <CopyCommand task={t} />
+                      {t.status === 'done' && (
+                        <button
+                          type="button"
+                          className="ds-btn sm icon"
+                          draggable={false}
+                          disabled={busy}
+                          aria-label="Archivieren"
+                          title="Archivieren"
+                          onClick={e => {
+                            e.stopPropagation();
+                            archive(t);
+                          }}
+                        >
+                          <Archive />
+                        </button>
+                      )}
                     </span>
                   </div>
                 ))}
