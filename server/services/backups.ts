@@ -52,13 +52,6 @@ const TIERS = [
     maxAgeDays: 30,
     targets: [`${MEDIA}/WD_BLACK`, `${MEDIA}/system`],
   },
-  {
-    id: 'pixel',
-    label: 'Pixel 4a Fotos',
-    logPrefix: 'pixel-4a-5g-',
-    maxAgeDays: 30,
-    targets: [`${MEDIA}/data`],
-  },
 ] as const;
 
 type TierDef = (typeof TIERS)[number];
@@ -136,11 +129,7 @@ async function tailOf(path: string, bytes: number): Promise<string> {
 async function logVerdict(file: string): Promise<boolean | null> {
   try {
     const tail = await tailOf(join(LOG_DIR, file), 4096);
-    if (
-      /Alle Backups erfolgreich|Backup (erfolgreich|abgeschlossen)|✅ (Home|Pixel|Windows)/.test(
-        tail
-      )
-    )
+    if (/Alle Backups erfolgreich|Backup (erfolgreich|abgeschlossen)|✅ (Home|Windows)/.test(tail))
       return true;
     if (/Fehler aufgetreten|fehlgeschlagen|nicht gemountet|nicht verfügbar/.test(tail))
       return false;
