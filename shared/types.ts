@@ -135,6 +135,14 @@ export interface WeatherData {
 
 export type MoiraStatus = 'todo' | 'doing' | 'review' | 'done';
 
+export interface MoiraActivity {
+  number: string;
+  state: 'working' | 'idle';
+  summary: string;
+  /** Seconds since the session last reported. */
+  age: number;
+}
+
 export interface MoiraTask {
   file: string;
   number: string;

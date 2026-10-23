@@ -36,6 +36,7 @@ import {
   setStatus,
   archiveTask,
   createTask,
+  listActivity,
   startPreview,
 } from './services/moiraTasks.js';
 import type { IncomingMessage } from 'http';
@@ -213,6 +214,15 @@ const scraperLimiter = rateLimit({
 });
 
 const moiraStatusSchema = z.object({ status: z.enum(['todo', 'doing', 'review', 'done']) });
+
+app.get('/api/moira/activity', generalLimiter, async (_req, res) => {
+  try {
+    res.json(await listActivity());
+  } catch (error) {
+    console.error('Failed to list Moira activity:', error);
+    res.status(500).json({ error: 'Failed to list Moira activity' });
+  }
+});
 
 app.get('/api/moira/tasks', generalLimiter, async (req, res) => {
   try {

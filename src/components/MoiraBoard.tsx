@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowLeft, ArrowRight, Archive, ExternalLink, Inbox, Plus, X } from 'lucide-react';
-import type { MoiraStatus, MoiraTask } from '../../shared/types';
+import type { MoiraActivity, MoiraStatus, MoiraTask } from '../../shared/types';
 import { apiFetch } from '../lib/api';
 import { toast } from '../lib/toast';
 import { useSettingJSON } from '../lib/settings';
@@ -12,6 +12,8 @@ const COLUMNS: { status: MoiraStatus; label: string; color: string }[] = [
   { status: 'done', label: 'Erledigt', color: 'var(--sig-green)' },
 ];
 const POLL_MS = 3000;
+// A working session that stopped reporting (crash, closed terminal) is no longer shown as live.
+const ACTIVITY_STALE_S = 120;
 const CATEGORY_COLORS = 10;
 
 // Stable colour per project name from the design-system category palette.
@@ -141,6 +143,16 @@ const PlanProgress = ({ body, color }: { body: string; color: string }) => {
   );
 };
 
+const LiveActivity = ({ activity }: { activity?: MoiraActivity }) => {
+  if (!activity || activity.state !== 'working' || activity.age > ACTIVITY_STALE_S) return null;
+  return (
+    <span className="flex items-center gap-2 min-w-0 text-xs text-accent">
+      <span className="w-2 h-2 shrink-0 rounded-full bg-accent animate-pulse" aria-hidden="true" />
+      <span className="truncate">{activity.summary || 'Arbeitet'}</span>
+    </span>
+  );
+};
+
 const ProjectChip = ({ name }: { name: string }) => (
   <span className="ds-chip" style={{ '--c': projectColor(name) } as React.CSSProperties}>
     {name}
@@ -157,7 +169,18 @@ export function MoiraBoard() {
   const [hidden, setHidden] = useSettingJSON<MoiraStatus[]>('moira-hidden-columns', []);
   const [dragging, setDragging] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<MoiraStatus | null>(null);
+  const [activity, setActivity] = useState<MoiraActivity[]>([]);
   const etag = useRef('');
+
+  const loadActivity = useCallback(async () => {
+    if (document.visibilityState !== 'visible') return;
+    try {
+      const res = await apiFetch('/api/moira/activity');
+      if (res.ok) setActivity(await res.json());
+    } catch {
+      // the board works without live state
+    }
+  }, []);
 
   const load = useCallback(async () => {
     if (document.visibilityState !== 'visible') return;
@@ -171,8 +194,10 @@ export function MoiraBoard() {
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      loadActivity();
     }
-  }, []);
+  }, [loadActivity]);
 
   useEffect(() => {
     load();
@@ -299,6 +324,7 @@ export function MoiraBoard() {
             <Archive />
           </button>
         </div>
+        <LiveActivity activity={activity.find(a => a.number === detail.number)} />
         <PlanProgress body={detail.body} color={col.color} />
         <pre className="flex-1 min-h-0 overflow-auto whitespace-pre-wrap text-sm text-text-dim bg-elevated border border-line rounded-lg p-3">
           {detail.body}
@@ -404,6 +430,7 @@ export function MoiraBoard() {
                       </span>
                       {t.idea && <span className="ds-badge warn">Idee</span>}
                     </span>
+                    <LiveActivity activity={activity.find(a => a.number === t.number)} />
                     {t.status !== 'done' && <PlanProgress body={t.body} color={col.color} />}
                     <span className="flex items-center gap-2 min-w-0 text-xs text-text-muted">
                       {t.project && <ProjectChip name={t.project} />}

@@ -3,12 +3,13 @@ import { createHash } from 'crypto';
 import { spawn } from 'child_process';
 import { mkdir, readdir, readFile, rename, stat, writeFile, open } from 'fs/promises';
 import { homedir } from 'os';
-import { join } from 'path';
-import type { MoiraStatus, MoiraTask } from '../../shared/types.js';
+import { basename, join } from 'path';
+import type { MoiraActivity, MoiraStatus, MoiraTask } from '../../shared/types.js';
 
 // Same files and format as Moira/src/moira/store.py, so TUI and widget stay interchangeable.
 const TASK_DIR = process.env.MOIRA_DIR || join(homedir(), '.local/share/moira/tasks');
 const ARCHIVE_DIR = join(TASK_DIR, 'archive');
+const ACTIVITY_DIR = join(TASK_DIR, '..', 'activity');
 const PROJECTS_DIR = join(homedir(), 'Dev');
 const STATUSES: readonly MoiraStatus[] = ['todo', 'doing', 'review', 'done'];
 const FILE_RE = /^\d{3}-[a-z0-9-]+\.md$/;
@@ -209,4 +210,40 @@ export async function startPreview(file: string): Promise<string> {
   }
   await out.close();
   return target;
+}
+
+/**
+ * Live state of Claude sessions, written per session by ~/.claude/hooks/moira-activity.sh.
+ * A session belongs to the task named in its `/moira NNN` prompt; otherwise to the `doing`
+ * task of the project it runs in, or to the only `doing` task.
+ */
+export async function listActivity(): Promise<MoiraActivity[]> {
+  let names: string[] = [];
+  try {
+    names = (await readdir(ACTIVITY_DIR)).filter(n => n.endsWith('.json'));
+  } catch {
+    return [];
+  }
+  const doing = (await listTasks()).tasks.filter(t => t.status === 'doing');
+  const now = Date.now() / 1000;
+  const result: MoiraActivity[] = [];
+  for (const name of names) {
+    try {
+      const a = JSON.parse(await readFile(join(ACTIVITY_DIR, name), 'utf-8'));
+      const inProject = doing.filter(t => t.project && t.project === basename(String(a.cwd ?? '')));
+      const number =
+        a.task ||
+        (inProject.length === 1 ? inProject[0].number : doing.length === 1 ? doing[0].number : '');
+      if (!number) continue;
+      result.push({
+        number,
+        state: a.state === 'working' ? 'working' : 'idle',
+        summary: String(a.summary ?? ''),
+        age: Math.max(0, Math.round(now - Number(a.ts))),
+      });
+    } catch {
+      // half-written or foreign file: skip
+    }
+  }
+  return result;
 }

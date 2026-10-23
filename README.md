@@ -33,6 +33,8 @@
 | **Connectivity Monitor**                                                                                                           | HTTP latency checks to internet endpoints            |
 | **Network Outage Map**                                                                                                             | visualizes connectivity status                       |
 
+Moira Board: columns can be hidden, ideas are captured raw (badge "Idea" until `/moira-new NNN` formulates and plans them), plan steps written as `- [ ]` checklist show a progress bar, and the hook `~/.claude/hooks/moira-activity.sh` (registered in `~/.claude/settings.json`) shows what Claude is doing right now on the card.
+
 ### Local-only widgets (no backend)
 
 | Widget              | Storage                                                                                                                                   |
