@@ -31,6 +31,7 @@ import {
 } from './services/gitStatus.js';
 import { getDockerInfo } from './services/docker.js';
 import { isPrivateHost } from './services/netGuard.js';
+import { listTasks, setStatus, archiveTask, startPreview } from './services/moiraTasks.js';
 import type { IncomingMessage } from 'http';
 
 // Sensitive system paths that must never be touched by git operations
@@ -203,6 +204,50 @@ const scraperLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
   message: { error: 'Scraping rate limit exceeded' },
+});
+
+const moiraStatusSchema = z.object({ status: z.enum(['todo', 'doing', 'review', 'done']) });
+
+app.get('/api/moira/tasks', generalLimiter, async (req, res) => {
+  try {
+    const { tasks, etag } = await listTasks();
+    res.set('ETag', etag);
+    if (req.get('If-None-Match') === etag) return res.status(304).end();
+    res.json(tasks);
+  } catch (error) {
+    console.error('Failed to list Moira tasks:', error);
+    res.status(500).json({ error: 'Failed to list Moira tasks' });
+  }
+});
+
+app.post('/api/moira/tasks/:file/status', generalLimiter, async (req, res) => {
+  const parsed = moiraStatusSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid status' });
+  try {
+    await setStatus(String(req.params.file), parsed.data.status);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('Failed to set Moira status:', error);
+    res.status(400).json({ error: 'Failed to set status' });
+  }
+});
+
+app.post('/api/moira/tasks/:file/archive', generalLimiter, async (req, res) => {
+  try {
+    await archiveTask(String(req.params.file));
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('Failed to archive Moira task:', error);
+    res.status(400).json({ error: 'Failed to archive task' });
+  }
+});
+
+app.post('/api/moira/tasks/:file/preview', generalLimiter, async (req, res) => {
+  try {
+    res.json({ url: await startPreview(String(req.params.file)) });
+  } catch (error) {
+    res.status(400).json({ error: error instanceof Error ? error.message : 'Preview failed' });
+  }
 });
 
 app.get('/api/metrics', generalLimiter, async (_req, res) => {

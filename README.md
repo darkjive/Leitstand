@@ -25,6 +25,7 @@
 | **System Metrics** — CPU · Memory · Performance graph · VRAM · Storage · Temperature (six independent widgets, shared data stream) | `systeminformation` + nvidia-smi/amdgpu sysfs        |
 | **Weather**                                                                                                                        | wttr.in API (proxied through the backend)            |
 | **Docker Monitoring**                                                                                                              | Docker socket                                        |
+| **Moira Board**                                                                                                                    | task files in `~/.local/share/moira/tasks` (`MOIRA_DIR`) |
 | **Git Widget**                                                                                                                     | status, pull, push, fetch, commit, bulk operations   |
 | **Web Scraper**                                                                                                                    | Playwright/Chromium (see NixOS note below)           |
 | **GitHub Stats**                                                                                                                   | GitHub API (set your username in Settings)           |

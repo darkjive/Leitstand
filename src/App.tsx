@@ -15,6 +15,7 @@ import { MarkdownEditor } from './components/MarkdownEditor';
 import { SoundManager } from './components/SoundManager';
 import { GitStatus } from './components/GitStatus';
 import { DockerWidget } from './components/DockerWidget';
+import { MoiraBoard } from './components/MoiraBoard';
 import { SettingsPanel } from './components/SettingsPanel';
 import { useSetting } from './lib/settings';
 import { Toaster } from './components/Toaster';
@@ -38,6 +39,7 @@ import {
   MemoryStick,
   Move,
   Radio,
+  SquareKanban,
   Thermometer,
 } from 'lucide-react';
 import 'react-grid-layout/css/styles.css';
@@ -84,6 +86,9 @@ const defaultLayout = [
 
   // Row 6: Markdown editor (full width for editing room)
   { i: 'markdown-editor', x: 0, y: 20, w: 12, h: 4, minW: 6, minH: 3 },
+
+  // Row 7: Moira board (full width)
+  { i: 'moira', x: 0, y: 24, w: 12, h: 6, minW: 6, minH: 4 },
 ];
 
 // Below this width the grid collapses to one column (phones via the Pforte gateway).
@@ -106,6 +111,7 @@ const defaultEnabledWidgets = {
   'network-outage': true,
   'git-status': true,
   docker: true,
+  moira: true,
 };
 
 type WidgetStatus = 'ready' | 'warning' | 'disabled';
@@ -130,6 +136,7 @@ const widgetConfig = {
   'network-outage': { name: 'NETWORK OUTAGES', icon: Radio, component: NetworkOutageMap },
   'git-status': { name: 'GIT STATUS', icon: GitBranch, component: GitStatus },
   docker: { name: 'DOCKER', icon: Container, component: DockerWidget },
+  moira: { name: 'MOIRA', icon: SquareKanban, component: MoiraBoard },
 };
 
 // Drops keys of removed widgets and fills in widgets the saved selection predates.
@@ -206,7 +213,7 @@ function migrateLegacyMetrics() {
 // Stale saved layouts (from an older defaultLayout revision) are discarded
 // so users get the fixed layout automatically, without having to know to
 // press "Reset".
-const LAYOUT_VERSION = 4;
+const LAYOUT_VERSION = 5;
 
 function invalidateStaleLayout() {
   try {
@@ -235,6 +242,15 @@ async function checkWidgetHealth(widgetId: string): Promise<WidgetHealth> {
           return { status: 'ready' };
         } catch {
           return { status: 'warning', message: 'Backend server not running' };
+        }
+
+      case 'moira':
+        try {
+          const res = await apiFetch('/api/moira/tasks', { signal: AbortSignal.timeout(3000) });
+          if (!res.ok) throw new Error('Moira API not available');
+          return { status: 'ready' };
+        } catch {
+          return { status: 'warning', message: 'Moira API not available' };
         }
 
       default:

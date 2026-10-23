@@ -130,3 +130,19 @@ export interface WeatherData {
     country: Array<{ value: string }>;
   }>;
 }
+
+// ---- Moira board (/api/moira/tasks) ----
+
+export type MoiraStatus = 'todo' | 'doing' | 'review' | 'done';
+
+export interface MoiraTask {
+  file: string;
+  number: string;
+  title: string;
+  status: MoiraStatus;
+  project: string;
+  created: string;
+  body: string;
+  preview: string;
+  previewCmd: string;
+}
