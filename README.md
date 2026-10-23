@@ -20,18 +20,19 @@
 
 ### Widgets (real backend data)
 
-| Widget                                                                                                                             | Data Source                                          |
-| ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| **System Metrics** — CPU · Memory · Performance graph · VRAM · Storage · Temperature (six independent widgets, shared data stream) | `systeminformation` + nvidia-smi/amdgpu sysfs        |
-| **Weather**                                                                                                                        | wttr.in API (proxied through the backend)            |
-| **Docker Monitoring**                                                                                                              | Docker socket                                        |
-| **Moira Board**                                                                                                                    | task files in `~/.local/share/moira/tasks` (`MOIRA_DIR`) |
-| **Git Widget**                                                                                                                     | status, pull, push, fetch, commit, bulk operations   |
-| **Web Scraper**                                                                                                                    | Playwright/Chromium (see NixOS note below)           |
-| **GitHub Stats**                                                                                                                   | GitHub API (set your username in Settings)           |
-| **Service Status**                                                                                                                 | Statuspage.io API (Cloudflare, GitHub, OpenAI, etc.) |
-| **Connectivity Monitor**                                                                                                           | HTTP latency checks to internet endpoints            |
-| **Network Outage Map**                                                                                                             | visualizes connectivity status                       |
+| Widget                                                                                                                             | Data Source                                                                                                      |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **System Metrics** — CPU · Memory · Performance graph · VRAM · Storage · Temperature (six independent widgets, shared data stream) | `systeminformation` + nvidia-smi/amdgpu sysfs                                                                    |
+| **Weather**                                                                                                                        | wttr.in API (proxied through the backend)                                                                        |
+| **Docker Monitoring**                                                                                                              | Docker socket                                                                                                    |
+| **Backups**                                                                                                                        | status files + logs of `_scripts/backup-scripts` (`BACKUP_SCRIPTS_DIR`, `BACKUP_STATE_DIR`), systemd user timers |
+| **Moira Board**                                                                                                                    | task files in `~/.local/share/moira/tasks` (`MOIRA_DIR`)                                                         |
+| **Git Widget**                                                                                                                     | status, pull, push, fetch, commit, bulk operations                                                               |
+| **Web Scraper**                                                                                                                    | Playwright/Chromium (see NixOS note below)                                                                       |
+| **GitHub Stats**                                                                                                                   | GitHub API (set your username in Settings)                                                                       |
+| **Service Status**                                                                                                                 | Statuspage.io API (Cloudflare, GitHub, OpenAI, etc.)                                                             |
+| **Connectivity Monitor**                                                                                                           | HTTP latency checks to internet endpoints                                                                        |
+| **Network Outage Map**                                                                                                             | visualizes connectivity status                                                                                   |
 
 Moira Board: columns can be hidden, ideas are captured raw (badge "Idee" until `/moira-new NNN` formulates and plans them), plan steps written as `- [ ]` checklist show a progress bar, and the hook `~/.claude/hooks/moira-activity.sh` (registered in `~/.claude/settings.json`) shows what Claude is doing right now on the card. Every card and the detail view has a copy button that puts the matching command on the clipboard (`/moira NNN`, `/moira-review NNN` in review, `/moira-new NNN` for ideas).
 
@@ -105,13 +106,15 @@ The dashboard works out of the box with defaults. For overrides, copy `.env.exam
 cp .env.example .env
 ```
 
-| Variable                    | Default     | Purpose                                                                                                                                             |
-| --------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `BIND_HOST`                 | `127.0.0.1` | Network interface to bind the backend to (loopback default)                                                                                         |
-| `PORT`                      | `3010`      | Backend port (also picked up by the Vite proxy + Electron)                                                                                          |
-| `DASHBOARD_TOKEN`           | _(empty)_   | Shared token for destructive endpoints. Empty = open (loopback default). **Required** when `BIND_HOST=0.0.0.0`.                                     |
-| `LEITSTAND_ALLOWED_HOSTS`   | _(empty)_   | Extra host names the Vite dev server accepts (comma-separated), e.g. a reverse proxy's public name.                                                 |
-| `LEITSTAND_ALLOWED_ORIGINS` | _(empty)_   | Exact page origins (`https://host:port`) allowed to open the metrics WebSocket besides loopback. Only for an authenticating reverse proxy in front. |
+| Variable                    | Default                         | Purpose                                                                                                                                             |
+| --------------------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BIND_HOST`                 | `127.0.0.1`                     | Network interface to bind the backend to (loopback default)                                                                                         |
+| `BACKUP_SCRIPTS_DIR`        | `~/Dev/_scripts`                | Repo with `backup-scripts/run-tier.sh` and `backup-logs/`                                                                                           |
+| `BACKUP_STATE_DIR`          | `~/.local/state/backup-scripts` | Per-tier JSON status written by the scripts                                                                                                         |
+| `PORT`                      | `3010`                          | Backend port (also picked up by the Vite proxy + Electron)                                                                                          |
+| `DASHBOARD_TOKEN`           | _(empty)_                       | Shared token for destructive endpoints. Empty = open (loopback default). **Required** when `BIND_HOST=0.0.0.0`.                                     |
+| `LEITSTAND_ALLOWED_HOSTS`   | _(empty)_                       | Extra host names the Vite dev server accepts (comma-separated), e.g. a reverse proxy's public name.                                                 |
+| `LEITSTAND_ALLOWED_ORIGINS` | _(empty)_                       | Exact page origins (`https://host:port`) allowed to open the metrics WebSocket besides loopback. Only for an authenticating reverse proxy in front. |
 
 > Frontend dev is `5180`, Vite preview is `4173`.
 
@@ -174,6 +177,7 @@ Leitstand/
 │       ├── systemMetrics.ts
 │       ├── weather.ts
 │       ├── docker.ts
+│       ├── backups.ts
 │       ├── gitStatus.ts
 │       ├── scraper.ts
 │       └── netGuard.ts           # SSRF guard (literal + DNS checks)
@@ -201,17 +205,22 @@ Leitstand/
 
 ### Backend (`http://localhost:3010`)
 
-| Endpoint                        | Description                                       |
-| ------------------------------- | ------------------------------------------------- |
-| `GET /api/metrics`              | System metrics (CPU, RAM, Disk, VRAM) — cached 2s |
-| `GET /api/weather?location=...` | Weather from wttr.in                              |
-| `GET /api/docker`               | Docker container status — cached 5s               |
-| `GET /api/service-status`       | Aggregated Statuspage.io data                     |
-| `GET /api/connectivity`         | HTTP latency probes                               |
-| `GET/POST /api/git/*`           | status, pull, push, fetch, commit, bulk           |
-| `POST /api/scrape`              | Playwright scraper (SSRF-guarded)                 |
-| `GET /health`                   | Health check                                      |
-| `WebSocket /ws`                 | Real-time metrics stream (2s broadcast)           |
+| Endpoint                        | Description                                                                  |
+| ------------------------------- | ---------------------------------------------------------------------------- |
+| `GET /api/metrics`              | System metrics (CPU, RAM, Disk, VRAM) — cached 2s                            |
+| `GET /api/weather?location=...` | Weather from wttr.in                                                         |
+| `GET /api/docker`               | Docker container status — cached 5s                                          |
+| `GET /api/backups`              | Backup status per tier, targets, schedule — cached 5s                        |
+| `POST /api/backups/:id/run`     | Start a backup (409 while running)                                           |
+| `POST /api/backups/:id/stop`    | Stop a running backup (SIGTERM to the process group)                         |
+| `PUT /api/backups/:id/schedule` | Body `{preset: off\|daily\|weekly\|monthly}`, writes a systemd timer drop-in |
+| `GET /api/backups/logs/:file`   | Tail of a backup log (strict file-name whitelist)                            |
+| `GET /api/service-status`       | Aggregated Statuspage.io data                                                |
+| `GET /api/connectivity`         | HTTP latency probes                                                          |
+| `GET/POST /api/git/*`           | status, pull, push, fetch, commit, bulk                                      |
+| `POST /api/scrape`              | Playwright scraper (SSRF-guarded)                                            |
+| `GET /health`                   | Health check                                                                 |
+| `WebSocket /ws`                 | Real-time metrics stream (2s broadcast)                                      |
 
 All endpoints are rate-limited (1000 req/min general, stricter for the scraper).
 When `DASHBOARD_TOKEN` is set, everything under `/api` plus the WebSocket requires the token —
@@ -221,11 +230,12 @@ only `GET /health` stays open.
 
 Widgets degrade gracefully if the underlying tool is missing.
 
-| Widget       | Requires                                                          |
-| ------------ | ----------------------------------------------------------------- |
-| WebScraper   | `pnpm exec playwright install` (NixOS: see below)                 |
-| DockerWidget | Docker daemon socket access                                       |
-| Git          | shells out; paths validated server-side (blocked system prefixes) |
+| Widget       | Requires                                                               |
+| ------------ | ---------------------------------------------------------------------- |
+| WebScraper   | `pnpm exec playwright install` (NixOS: see below)                      |
+| DockerWidget | Docker daemon socket access                                            |
+| BackupWidget | `_scripts/systemd/install.sh` once for schedules (systemd user timers) |
+| Git          | shells out; paths validated server-side (blocked system prefixes)      |
 
 ### NixOS Note (Playwright)
 

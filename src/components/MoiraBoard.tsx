@@ -39,8 +39,14 @@ function NewTaskDialog({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  const [devProjects, setDevProjects] = useState<string[]>([]);
+
   useEffect(() => {
     ref.current?.showModal();
+    apiFetch('/api/moira/projects')
+      .then(r => (r.ok ? r.json() : []))
+      .then(setDevProjects)
+      .catch(() => {});
   }, []);
 
   const submit = async (e: React.FormEvent) => {
@@ -89,7 +95,7 @@ function NewTaskDialog({
             maxLength={100}
           />
           <datalist id="moira-projects">
-            {projects.map(p => (
+            {[...new Set([...devProjects, ...projects])].sort().map(p => (
               <option key={p} value={p} />
             ))}
           </datalist>

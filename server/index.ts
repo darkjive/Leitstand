@@ -32,11 +32,20 @@ import {
 import { getDockerInfo } from './services/docker.js';
 import { isPrivateHost } from './services/netGuard.js';
 import {
+  BackupError,
+  getBackupOverview,
+  startBackup,
+  stopBackup,
+  setSchedule,
+  readBackupLog,
+} from './services/backups.js';
+import {
   listTasks,
   setStatus,
   archiveTask,
   createTask,
   listActivity,
+  listProjects,
   startPreview,
 } from './services/moiraTasks.js';
 import type { IncomingMessage } from 'http';
@@ -213,6 +222,12 @@ const scraperLimiter = rateLimit({
   message: { error: 'Scraping rate limit exceeded' },
 });
 
+const backupActionLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  message: { error: 'Backup action rate limit exceeded' },
+});
+
 const moiraStatusSchema = z.object({ status: z.enum(['todo', 'doing', 'review', 'done']) });
 
 app.get('/api/moira/activity', generalLimiter, async (_req, res) => {
@@ -233,6 +248,15 @@ app.get('/api/moira/tasks', generalLimiter, async (req, res) => {
   } catch (error) {
     console.error('Failed to list Moira tasks:', error);
     res.status(500).json({ error: 'Failed to list Moira tasks' });
+  }
+});
+
+app.get('/api/moira/projects', generalLimiter, async (_req, res) => {
+  try {
+    res.json(await listProjects());
+  } catch (error) {
+    console.error('Failed to list Moira projects:', error);
+    res.status(500).json({ error: 'Failed to list Moira projects' });
   }
 });
 
@@ -320,6 +344,59 @@ app.get('/api/weather', generalLimiter, async (req, res) => {
     }
     console.error('Failed to fetch weather:', error);
     res.status(500).json({ error: 'Failed to fetch weather data' });
+  }
+});
+
+const backupScheduleSchema = z.object({ preset: z.enum(['off', 'daily', 'weekly', 'monthly']) });
+
+function backupFail(res: Response, error: unknown, what: string) {
+  if (error instanceof BackupError) return res.status(error.status).json({ error: error.message });
+  console.error(`Failed to ${what}:`, error);
+  return res.status(500).json({ error: `Failed to ${what}` });
+}
+
+app.get('/api/backups', generalLimiter, async (_req, res) => {
+  try {
+    res.json(await getBackupOverview());
+  } catch (error) {
+    backupFail(res, error, 'read backups');
+  }
+});
+
+app.get('/api/backups/logs/:file', generalLimiter, async (req, res) => {
+  try {
+    res.json({ lines: await readBackupLog(String(req.params.file)) });
+  } catch (error) {
+    backupFail(res, error, 'read backup log');
+  }
+});
+
+app.post('/api/backups/:id/run', backupActionLimiter, async (req, res) => {
+  try {
+    await startBackup(String(req.params.id));
+    res.json({ ok: true });
+  } catch (error) {
+    backupFail(res, error, 'start backup');
+  }
+});
+
+app.post('/api/backups/:id/stop', backupActionLimiter, async (req, res) => {
+  try {
+    await stopBackup(String(req.params.id));
+    res.json({ ok: true });
+  } catch (error) {
+    backupFail(res, error, 'stop backup');
+  }
+});
+
+app.put('/api/backups/:id/schedule', backupActionLimiter, async (req, res) => {
+  const parsed = backupScheduleSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid preset' });
+  try {
+    await setSchedule(String(req.params.id), parsed.data.preset);
+    res.json({ ok: true });
+  } catch (error) {
+    backupFail(res, error, 'set backup schedule');
   }
 });
 

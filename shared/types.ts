@@ -156,3 +156,41 @@ export interface MoiraTask {
   preview: string;
   previewCmd: string;
 }
+
+// ---- Backups (/api/backups) ----
+
+export type BackupState = 'ok' | 'failed' | 'running' | 'never' | 'stale';
+export type BackupPreset = 'off' | 'daily' | 'weekly' | 'monthly';
+
+export interface BackupTarget {
+  path: string;
+  mounted: boolean;
+  totalBytes?: number;
+  freeBytes?: number;
+}
+
+export interface BackupTierStatus {
+  id: string;
+  label: string;
+  state: BackupState;
+  lastRun?: {
+    started: string;
+    finished?: string;
+    durationS?: number;
+    exit?: number;
+    errors?: number;
+    log?: string;
+  };
+  ageDays?: number;
+  maxAgeDays: number;
+  targets: BackupTarget[];
+  schedule: { preset: BackupPreset; nextRun?: string; lastTrigger?: string };
+  /** Newest first; ok is null while unknown (no end marker yet). */
+  history: { file: string; started: string; ok: boolean | null }[];
+}
+
+export interface BackupOverview {
+  tiers: BackupTierStatus[];
+  scriptsDir: string;
+  available: boolean;
+}

@@ -16,6 +16,7 @@ import { SoundManager } from './components/SoundManager';
 import { GitStatus } from './components/GitStatus';
 import { DockerWidget } from './components/DockerWidget';
 import { MoiraBoard } from './components/MoiraBoard';
+import { BackupWidget } from './components/BackupWidget';
 import { SettingsPanel } from './components/SettingsPanel';
 import { useSetting } from './lib/settings';
 import { Toaster } from './components/Toaster';
@@ -29,6 +30,7 @@ import {
   ChartLine,
   CloudSun,
   Container,
+  HardDriveDownload,
   Cpu,
   FileText,
   GitBranch,
@@ -87,8 +89,11 @@ const defaultLayout = [
   { i: 'network-outage', x: 0, y: 22, w: 6, h: 4, minW: 6, minH: 4 },
   { i: 'web-scraper', x: 6, y: 22, w: 6, h: 4, minW: 3, minH: 3 },
 
-  // Row 7: Markdown editor (full width for editing room)
-  { i: 'markdown-editor', x: 0, y: 26, w: 12, h: 4, minW: 6, minH: 3 },
+  // Row 7: Backups
+  { i: 'backups', x: 0, y: 26, w: 12, h: 6, minW: 3, minH: 3 },
+
+  // Row 8: Markdown editor (full width for editing room)
+  { i: 'markdown-editor', x: 0, y: 32, w: 12, h: 4, minW: 6, minH: 3 },
 ];
 
 // Below this width the grid collapses to one column (phones via the Pforte gateway).
@@ -102,6 +107,7 @@ const defaultEnabledWidgets = {
   moira: true,
   'git-status': true,
   docker: true,
+  backups: true,
   'metrics-cpu': true,
   'metrics-memory': true,
   'metrics-vram': true,
@@ -127,6 +133,7 @@ const widgetConfig = {
   moira: { name: 'MOIRA', icon: SquareKanban, component: MoiraBoard },
   'git-status': { name: 'GIT STATUS', icon: GitBranch, component: GitStatus },
   docker: { name: 'DOCKER', icon: Container, component: DockerWidget },
+  backups: { name: 'BACKUPS', icon: HardDriveDownload, component: BackupWidget },
   'metrics-cpu': { name: 'CPU', icon: Cpu, component: CpuWidget },
   'metrics-memory': { name: 'MEMORY', icon: MemoryStick, component: MemoryWidget },
   'metrics-vram': { name: 'VRAM', icon: Gpu, component: VramWidget },
@@ -215,7 +222,7 @@ function migrateLegacyMetrics() {
 // Stale saved layouts (from an older defaultLayout revision) are discarded
 // so users get the fixed layout automatically, without having to know to
 // press "Reset".
-const LAYOUT_VERSION = 6;
+const LAYOUT_VERSION = 7;
 
 function invalidateStaleLayout() {
   try {

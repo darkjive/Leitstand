@@ -92,6 +92,14 @@ export async function listTasks(): Promise<{ tasks: MoiraTask[]; etag: string }>
   return cache;
 }
 
+export async function listProjects(): Promise<string[]> {
+  const entries = await readdir(PROJECTS_DIR, { withFileTypes: true });
+  return entries
+    .filter(e => e.isDirectory() && !e.name.startsWith('.') && !e.name.startsWith('_'))
+    .map(e => e.name)
+    .sort((a, b) => a.localeCompare(b));
+}
+
 async function findTask(file: string): Promise<MoiraTask> {
   if (!isTaskFile(file)) throw new Error('Invalid task file');
   return parseTask(file);
