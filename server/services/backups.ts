@@ -40,7 +40,7 @@ const TIERS = [
   },
   {
     id: 'tier2',
-    label: 'Tier 2 · Design + Dev',
+    label: 'Tier 2 · Design, Fonts, Dev',
     logPrefix: 'tier2-',
     maxAgeDays: 14,
     targets: [`${MEDIA}/WD_BLACK`],
