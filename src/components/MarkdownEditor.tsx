@@ -163,12 +163,12 @@ export function MarkdownEditor() {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
         <div className="flex items-center gap-2">
           <FileText className="w-5 h-5 text-accent" />
           <h3 className="text-lg font-bold">MARKDOWN EDITOR</h3>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Input Mode Toggle */}
           <div className="flex gap-1 bg-bg border border-line rounded p-1">
             <button
@@ -189,7 +189,7 @@ export function MarkdownEditor() {
             </button>
           </div>
           <div className="w-px h-4 bg-line" />
-          <div className="flex items-center gap-1">
+          <div className="flex flex-wrap items-center gap-1">
             <button
               onClick={() => setViewMode('edit')}
               className={`ds-btn ghost icon ${viewMode === 'edit' ? 'active' : ''}`}

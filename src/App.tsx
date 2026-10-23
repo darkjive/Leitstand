@@ -61,57 +61,59 @@ interface LayoutItem {
 // columns into a "staircase" — each row's bottom edge lines up cleanly for
 // the next row.
 const defaultLayout = [
-  // Row 1: CPU, Storage + performance graph
-  { i: 'metrics-cpu', x: 0, y: 0, w: 3, h: 4, minW: 3, minH: 3 },
-  { i: 'metrics-storage', x: 3, y: 0, w: 3, h: 4, minW: 3, minH: 3 },
-  { i: 'metrics-graph', x: 6, y: 0, w: 6, h: 4, minW: 6, minH: 3 },
+  // Row 1: Moira board (full width, on top)
+  { i: 'moira', x: 0, y: 0, w: 12, h: 5, minW: 6, minH: 4 },
 
-  // Row 2: Memory, VRAM, Temperature — compact half-height strip
-  { i: 'metrics-memory', x: 0, y: 4, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'metrics-vram', x: 4, y: 4, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'metrics-temp', x: 8, y: 4, w: 4, h: 2, minW: 3, minH: 2 },
+  // Row 2: Dev tools
+  { i: 'git-status', x: 0, y: 5, w: 6, h: 6, minW: 4, minH: 4 },
+  { i: 'docker', x: 6, y: 5, w: 6, h: 6, minW: 4, minH: 4 },
 
-  // Row 3: Dev tools
-  { i: 'git-status', x: 0, y: 6, w: 6, h: 6, minW: 4, minH: 4 },
-  { i: 'docker', x: 6, y: 6, w: 6, h: 6, minW: 4, minH: 4 },
+  // Row 3: System values
+  { i: 'metrics-cpu', x: 0, y: 11, w: 3, h: 3, minW: 3, minH: 2 },
+  { i: 'metrics-memory', x: 3, y: 11, w: 3, h: 3, minW: 3, minH: 2 },
+  { i: 'metrics-vram', x: 6, y: 11, w: 3, h: 3, minW: 3, minH: 2 },
+  { i: 'metrics-temp', x: 9, y: 11, w: 3, h: 3, minW: 3, minH: 2 },
 
-  // Row 4: Services
-  { i: 'github', x: 0, y: 12, w: 4, h: 4, minW: 4, minH: 4 },
-  { i: 'service-status', x: 4, y: 12, w: 4, h: 4, minW: 4, minH: 4 },
-  { i: 'weather', x: 8, y: 12, w: 4, h: 4, minW: 4, minH: 4 },
+  // Row 4: History
+  { i: 'metrics-graph', x: 0, y: 14, w: 8, h: 4, minW: 6, minH: 3 },
+  { i: 'metrics-storage', x: 8, y: 14, w: 4, h: 4, minW: 3, minH: 3 },
 
-  // Row 5: Network + scraper
-  { i: 'network-outage', x: 0, y: 16, w: 6, h: 4, minW: 6, minH: 4 },
-  { i: 'web-scraper', x: 6, y: 16, w: 6, h: 4, minW: 3, minH: 3 },
+  // Row 5: Services
+  { i: 'service-status', x: 0, y: 18, w: 4, h: 4, minW: 4, minH: 4 },
+  { i: 'github', x: 4, y: 18, w: 4, h: 4, minW: 4, minH: 4 },
+  { i: 'weather', x: 8, y: 18, w: 4, h: 4, minW: 4, minH: 4 },
 
-  // Row 6: Markdown editor (full width for editing room)
-  { i: 'markdown-editor', x: 0, y: 20, w: 12, h: 4, minW: 6, minH: 3 },
+  // Row 6: Network + scraper
+  { i: 'network-outage', x: 0, y: 22, w: 6, h: 4, minW: 6, minH: 4 },
+  { i: 'web-scraper', x: 6, y: 22, w: 6, h: 4, minW: 3, minH: 3 },
 
-  // Row 7: Moira board (full width)
-  { i: 'moira', x: 0, y: 24, w: 12, h: 6, minW: 6, minH: 4 },
+  // Row 7: Markdown editor (full width for editing room)
+  { i: 'markdown-editor', x: 0, y: 26, w: 12, h: 4, minW: 6, minH: 3 },
 ];
 
 // Below this width the grid collapses to one column (phones via the Pforte gateway).
 const MOBILE_BREAKPOINT = 768;
+// Below this width (and above phones) the grid uses 6 columns.
+const TABLET_BREAKPOINT = 1280;
 // Page padding: px-3 on phones, px-6 above; the grid width must match.
 const gridWidth = (viewport: number) => viewport - (viewport < MOBILE_BREAKPOINT ? 24 : 48);
 
 const defaultEnabledWidgets = {
-  'metrics-cpu': true,
-  'metrics-memory': true,
-  'metrics-graph': true,
-  'metrics-vram': true,
-  'metrics-storage': true,
-  'metrics-temp': true,
-  'markdown-editor': true,
-  'web-scraper': true,
-  weather: true,
-  github: true,
-  'service-status': true,
-  'network-outage': true,
+  moira: true,
   'git-status': true,
   docker: true,
-  moira: true,
+  'metrics-cpu': true,
+  'metrics-memory': true,
+  'metrics-vram': true,
+  'metrics-temp': true,
+  'metrics-graph': true,
+  'metrics-storage': true,
+  'service-status': true,
+  github: true,
+  weather: true,
+  'network-outage': true,
+  'web-scraper': true,
+  'markdown-editor': true,
 };
 
 type WidgetStatus = 'ready' | 'warning' | 'disabled';
@@ -122,21 +124,21 @@ interface WidgetHealth {
 }
 
 const widgetConfig = {
-  'metrics-cpu': { name: 'CPU', icon: Cpu, component: CpuWidget },
-  'metrics-memory': { name: 'MEMORY', icon: MemoryStick, component: MemoryWidget },
-  'metrics-graph': { name: 'PERFORMANCE', icon: ChartLine, component: MetricsGraphWidget },
-  'metrics-vram': { name: 'VRAM', icon: Gpu, component: VramWidget },
-  'metrics-storage': { name: 'STORAGE', icon: HardDrive, component: StorageWidget },
-  'metrics-temp': { name: 'TEMPERATURE', icon: Thermometer, component: TemperatureWidget },
-  'markdown-editor': { name: 'MARKDOWN EDITOR', icon: FileText, component: MarkdownEditor },
-  'web-scraper': { name: 'WEB SCRAPER', icon: Globe, component: WebScraper },
-  weather: { name: 'WEATHER', icon: CloudSun, component: WeatherWidget },
-  github: { name: 'GITHUB STATS', icon: Github, component: GitHubStats },
-  'service-status': { name: 'SERVICE STATUS', icon: Activity, component: ServiceStatus },
-  'network-outage': { name: 'NETWORK OUTAGES', icon: Radio, component: NetworkOutageMap },
+  moira: { name: 'MOIRA', icon: SquareKanban, component: MoiraBoard },
   'git-status': { name: 'GIT STATUS', icon: GitBranch, component: GitStatus },
   docker: { name: 'DOCKER', icon: Container, component: DockerWidget },
-  moira: { name: 'MOIRA', icon: SquareKanban, component: MoiraBoard },
+  'metrics-cpu': { name: 'CPU', icon: Cpu, component: CpuWidget },
+  'metrics-memory': { name: 'MEMORY', icon: MemoryStick, component: MemoryWidget },
+  'metrics-vram': { name: 'VRAM', icon: Gpu, component: VramWidget },
+  'metrics-temp': { name: 'TEMPERATURE', icon: Thermometer, component: TemperatureWidget },
+  'metrics-graph': { name: 'PERFORMANCE', icon: ChartLine, component: MetricsGraphWidget },
+  'metrics-storage': { name: 'STORAGE', icon: HardDrive, component: StorageWidget },
+  'service-status': { name: 'SERVICE STATUS', icon: Activity, component: ServiceStatus },
+  github: { name: 'GITHUB STATS', icon: Github, component: GitHubStats },
+  weather: { name: 'WEATHER', icon: CloudSun, component: WeatherWidget },
+  'network-outage': { name: 'NETWORK OUTAGES', icon: Radio, component: NetworkOutageMap },
+  'web-scraper': { name: 'WEB SCRAPER', icon: Globe, component: WebScraper },
+  'markdown-editor': { name: 'MARKDOWN EDITOR', icon: FileText, component: MarkdownEditor },
 };
 
 // Drops keys of removed widgets and fills in widgets the saved selection predates.
@@ -213,7 +215,7 @@ function migrateLegacyMetrics() {
 // Stale saved layouts (from an older defaultLayout revision) are discarded
 // so users get the fixed layout automatically, without having to know to
 // press "Reset".
-const LAYOUT_VERSION = 5;
+const LAYOUT_VERSION = 6;
 
 function invalidateStaleLayout() {
   try {
@@ -370,6 +372,8 @@ function App() {
   };
 
   const isMobile = containerWidth < MOBILE_BREAKPOINT - 24;
+  const isTablet = !isMobile && containerWidth < TABLET_BREAKPOINT - 48;
+  const isDesktop = !isMobile && !isTablet;
   // Phones: one column in desktop reading order (row by row, left to right), fixed in
   // place. Derived on the fly and never saved, so the desktop layout stays untouched.
   const mobileLayout = useMemo(() => {
@@ -382,10 +386,31 @@ function App() {
         y: prev ? prev.y + prev.h : 0,
         w: 1,
         minW: 1,
-        h: Math.max(item.h, 3),
+        h: Math.max(item.h, 4),
       });
     }
     return stacked;
+  }, [layout]);
+
+  // Tablets: 6 columns in desktop reading order, fixed in place. Derived on the fly and
+  // never saved, like the phone layout.
+  const tabletLayout = useMemo(() => {
+    const packed: LayoutItem[] = [];
+    let x = 0;
+    let y = 0;
+    let rowH = 0;
+    for (const item of [...layout].sort((a, b) => a.y - b.y || a.x - b.x)) {
+      const w = item.w >= 6 ? 6 : 3;
+      if (x + w > 6) {
+        y += rowH;
+        x = 0;
+        rowH = 0;
+      }
+      packed.push({ ...item, x, y, w, minW: Math.min(item.minW ?? 1, w) });
+      x += w;
+      rowH = Math.max(rowH, item.h);
+    }
+    return packed;
   }, [layout]);
 
   // react-grid-layout only reports items of mounted (enabled) widgets; keep the
@@ -444,8 +469,8 @@ function App() {
                 <Settings className="w-4 h-4" />
                 <span className="hidden sm:inline">Settings</span>
               </button>
-              {/* Layout actions only where the layout can be edited (not in the fixed phone view) */}
-              {!isMobile && (
+              {/* Layout actions only where the layout can be edited (not in the fixed phone/tablet views) */}
+              {isDesktop && (
                 <>
                   <button
                     onClick={manualSave}
@@ -530,16 +555,16 @@ function App() {
       <div className="px-3 py-3 md:px-6 md:py-6">
         <GridLayout
           className="layout"
-          layout={isMobile ? mobileLayout : layout}
-          cols={isMobile ? 1 : 12}
+          layout={isMobile ? mobileLayout : isTablet ? tabletLayout : layout}
+          cols={isMobile ? 1 : isTablet ? 6 : 12}
           rowHeight={isMobile ? 80 : 120}
           width={containerWidth}
-          onLayoutChange={isMobile ? undefined : saveLayout}
+          onLayoutChange={isDesktop ? saveLayout : undefined}
           onDragStart={() => setIsDragging(true)}
           onDragStop={() => setIsDragging(false)}
           draggableHandle=".drag-handle"
-          isDraggable={!isMobile}
-          isResizable={!isMobile}
+          isDraggable={isDesktop}
+          isResizable={isDesktop}
           compactType="vertical"
           preventCollision={false}
         >
@@ -553,10 +578,10 @@ function App() {
                 key={id}
                 // Grid falls back to this for a re-enabled widget it no longer tracks
                 data-grid={layout.find(item => item.i === id)}
-                className={isDragging ? 'dragging' : ''}
+                className={`flex flex-col${isDragging ? ' dragging' : ''}`}
                 style={{ pointerEvents: 'auto' }}
               >
-                <div className="drag-handle group cursor-move p-2 border-b border-line hover:bg-accent/10 select-none">
+                <div className="drag-handle group cursor-move shrink-0 p-2 border-b border-line hover:bg-accent/10 select-none">
                   <div className="text-xs font-bold text-gray-400 flex items-center gap-1.5">
                     <config.icon size={12} />
                     {config.name}
@@ -567,8 +592,8 @@ function App() {
                   </div>
                 </div>
                 <div
-                  className="p-4 overflow-auto"
-                  style={{ height: 'calc(100% - 48px)', pointerEvents: 'auto' }}
+                  className="p-4 overflow-auto flex-1 min-h-0 @container"
+                  style={{ pointerEvents: 'auto' }}
                 >
                   {id === 'github' ? (
                     <WidgetComponent username={githubUsername} />

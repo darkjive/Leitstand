@@ -7,7 +7,7 @@ export function TemperatureWidget() {
       {metrics =>
         metrics.temperature.available ? (
           <div className="space-y-1">
-            <div className="text-4xl font-bold text-accent-bright">
+            <div className="text-4xl @xs:text-5xl font-bold text-accent-bright">
               {metrics.temperature.main.toFixed(1)}°C
             </div>
             <div className="text-xs text-gray-400">Max: {metrics.temperature.max.toFixed(1)}°C</div>

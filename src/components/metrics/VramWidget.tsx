@@ -7,12 +7,9 @@ export function VramWidget() {
     <MetricsShell title="VRAM" icon={<MemoryStick className="text-accent w-5 h-5" />}>
       {metrics =>
         metrics.vram && metrics.vram.available ? (
-          <div className="space-y-3">
+          <div className="grid gap-3 @md:grid-cols-2">
             {metrics.vram.gpus.map((gpu, i) => (
-              <div
-                key={i}
-                className="border-t border-line pt-3 first:border-t-0 first:pt-0"
-              >
+              <div key={i} className="border-t border-line pt-3 first:border-t-0 first:pt-0">
                 <div className="flex justify-between mb-1">
                   <span className="text-gray-400 font-mono text-xs truncate" title={gpu.model}>
                     {gpu.model}

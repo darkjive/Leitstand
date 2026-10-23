@@ -42,10 +42,7 @@ export function DockerWidget() {
       <div className="flex flex-col items-center justify-center h-full text-center p-4">
         <AlertCircle className="w-12 h-12 text-red-400 mb-2" />
         <div className="text-red-400 text-sm">{error || 'Failed to load Docker info'}</div>
-        <button
-          onClick={fetchDockerInfo}
-          className="ds-btn mt-4"
-        >
+        <button onClick={fetchDockerInfo} className="ds-btn mt-4">
           Retry
         </button>
       </div>
@@ -66,17 +63,17 @@ export function DockerWidget() {
     <div className="h-full flex flex-col space-y-4">
       {/* Stats Summary */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-elevated border border-line rounded-lg p-3">
+        <div className="bg-elevated border border-line rounded-lg p-2 @xs:p-3">
           <div className="text-xs text-gray-400 mb-1">TOTAL</div>
-          <div className="text-2xl font-bold text-accent">{dockerInfo.total}</div>
+          <div className="text-xl @xs:text-2xl font-bold text-accent">{dockerInfo.total}</div>
         </div>
-        <div className="bg-elevated border border-green-500/30 rounded-lg p-3">
+        <div className="bg-elevated border border-green-500/30 rounded-lg p-2 @xs:p-3">
           <div className="text-xs text-gray-400 mb-1">RUNNING</div>
-          <div className="text-2xl font-bold text-green-400">{dockerInfo.running}</div>
+          <div className="text-xl @xs:text-2xl font-bold text-green-400">{dockerInfo.running}</div>
         </div>
-        <div className="bg-elevated border border-red-500/30 rounded-lg p-3">
+        <div className="bg-elevated border border-red-500/30 rounded-lg p-2 @xs:p-3">
           <div className="text-xs text-gray-400 mb-1">STOPPED</div>
-          <div className="text-2xl font-bold text-red-400">{dockerInfo.stopped}</div>
+          <div className="text-xl @xs:text-2xl font-bold text-red-400">{dockerInfo.stopped}</div>
         </div>
       </div>
 
@@ -141,9 +138,7 @@ export function DockerWidget() {
                     {container.cpu !== undefined && (
                       <div className="flex items-center gap-1">
                         <span className="text-gray-500">CPU:</span>
-                        <span className="font-mono text-accent">
-                          {container.cpu.toFixed(1)}%
-                        </span>
+                        <span className="font-mono text-accent">{container.cpu.toFixed(1)}%</span>
                       </div>
                     )}
                     {container.memory !== undefined && (

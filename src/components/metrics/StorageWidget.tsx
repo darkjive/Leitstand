@@ -7,12 +7,9 @@ export function StorageWidget() {
     <MetricsShell title="STORAGE" icon={<HardDrive className="text-accent w-5 h-5" />}>
       {metrics =>
         metrics.disk.length > 0 ? (
-          <div className="space-y-3">
+          <div className="grid gap-3 @md:grid-cols-2">
             {metrics.disk.slice(0, 3).map((disk, i) => (
-              <div
-                key={i}
-                className="border-t border-line pt-3 first:border-t-0 first:pt-0"
-              >
+              <div key={i} className="border-t border-line pt-3 first:border-t-0 first:pt-0">
                 <div className="flex justify-between mb-1">
                   <span className="text-gray-400 font-mono text-xs">{disk.mount}</span>
                   <span className="text-accent font-bold text-sm">

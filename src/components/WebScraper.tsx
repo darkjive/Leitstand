@@ -116,10 +116,10 @@ export function WebScraper() {
             max={MAX_DEPTH}
             value={depth}
             onChange={e => setDepth(parseInt(e.target.value))}
-            className="flex-1"
+            className="flex-1 min-w-0"
             disabled={loading}
           />
-          <div className="text-right min-w-30">
+          <div className="text-right @xs:min-w-30">
             <div className="text-sm font-bold text-accent">
               {depth} level{depth > 1 ? 's' : ''}
             </div>

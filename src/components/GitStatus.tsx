@@ -404,10 +404,7 @@ export function GitStatus() {
             className="w-full px-3 py-2 bg-bg border border-line text-gray-300 text-xs rounded font-mono mb-2"
             autoFocus
           />
-          <button
-            onClick={addRoot}
-            className="ds-btn primary block"
-          >
+          <button onClick={addRoot} className="ds-btn primary block">
             Add Root & Scan
           </button>
         </div>
@@ -470,10 +467,7 @@ export function GitStatus() {
               className="flex-1 px-2 py-1 bg-bg border border-line text-gray-300 text-xs rounded font-mono"
               autoFocus
             />
-            <button
-              onClick={addRoot}
-              className="ds-btn primary sm"
-            >
+            <button onClick={addRoot} className="ds-btn primary sm">
               Add
             </button>
             <button
@@ -492,7 +486,7 @@ export function GitStatus() {
       </div>
 
       {/* ---- Stat strip ---- */}
-      <div className="flex items-center gap-2 px-3 py-1.5 border-b border-line text-xs flex-shrink-0">
+      <div className="flex flex-wrap items-center gap-x-2 px-3 py-1.5 border-b border-line text-xs flex-shrink-0">
         <span className="text-green-400">{stats.clean} clean</span>
         <span className="text-gray-700">·</span>
         <span className="text-yellow-400">{stats.dirty} dirty</span>
@@ -547,7 +541,7 @@ export function GitStatus() {
             ) : (
               <Cloud className="w-3 h-3" />
             )}
-            Fetch
+            <span className="hidden @sm:inline">Fetch</span>
           </button>
           <button
             onClick={() => openConfirm('pull')}
@@ -560,7 +554,7 @@ export function GitStatus() {
             ) : (
               <Download className="w-3 h-3" />
             )}
-            Pull
+            <span className="hidden @sm:inline">Pull</span>
           </button>
           <button
             onClick={() => openConfirm('push')}
@@ -573,7 +567,7 @@ export function GitStatus() {
             ) : (
               <Upload className="w-3 h-3" />
             )}
-            Push
+            <span className="hidden @sm:inline">Push</span>
           </button>
           <button
             onClick={() => setBulkCommitOpen(true)}
@@ -586,7 +580,7 @@ export function GitStatus() {
             ) : (
               <GitCommit className="w-3 h-3" />
             )}
-            Commit
+            <span className="hidden @sm:inline">Commit</span>
           </button>
         </div>
       </div>
@@ -643,7 +637,7 @@ export function GitStatus() {
                   <span className="text-xs text-yellow-400">+{repo.changedFiles}</span>
                 )}
                 {repo.branch && (
-                  <span className="text-xs text-gray-500 font-mono hidden sm:inline">
+                  <span className="text-xs text-gray-500 font-mono hidden @sm:inline">
                     {repo.branch}
                   </span>
                 )}
@@ -789,10 +783,7 @@ export function GitStatus() {
             ))}
           </div>
           <div className="flex gap-2 justify-end">
-            <button
-              onClick={() => setConfirm(null)}
-              className="ds-btn sm"
-            >
+            <button onClick={() => setConfirm(null)} className="ds-btn sm">
               Cancel
             </button>
             <button
@@ -820,10 +811,7 @@ export function GitStatus() {
             autoFocus
           />
           <div className="flex gap-2 justify-end">
-            <button
-              onClick={() => setBulkCommitOpen(false)}
-              className="ds-btn sm"
-            >
+            <button onClick={() => setBulkCommitOpen(false)} className="ds-btn sm">
               Cancel
             </button>
             <button

@@ -41,7 +41,7 @@ export function MetricsShell({ title, icon, children }: MetricsShellProps) {
         </span>
       </div>
 
-      <div className="flex-1">
+      <div className="flex-1 min-h-0 flex flex-col justify-center">
         {loading ? (
           <div className="text-accent text-sm">
             CONNECTING
