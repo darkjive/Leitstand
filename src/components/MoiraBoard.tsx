@@ -115,6 +115,32 @@ function NewTaskDialog({
   );
 }
 
+// Plan steps are `- [ ]` / `- [x]` lines under `## Plan`; Claude ticks them off while implementing.
+const planProgress = (body: string) => {
+  const plan = body.split(/^## Plan\b.*$/m)[1]?.split(/^## /m)[0] ?? '';
+  const boxes = plan.match(/^\s*- \[[ xX]\]/gm) ?? [];
+  const done = boxes.filter(b => !b.endsWith('[ ]')).length;
+  return { done, total: boxes.length };
+};
+
+const PlanProgress = ({ body, color }: { body: string; color: string }) => {
+  const { done, total } = planProgress(body);
+  if (total === 0) return null;
+  return (
+    <span className="flex items-center gap-2 text-xs text-text-muted">
+      <span
+        className="ds-progress flex-1"
+        style={{ '--v': done / total, '--c': color } as React.CSSProperties}
+      >
+        <span />
+      </span>
+      <span className="tabular-nums">
+        {done}/{total}
+      </span>
+    </span>
+  );
+};
+
 const ProjectChip = ({ name }: { name: string }) => (
   <span className="ds-chip" style={{ '--c': projectColor(name) } as React.CSSProperties}>
     {name}
@@ -273,6 +299,7 @@ export function MoiraBoard() {
             <Archive />
           </button>
         </div>
+        <PlanProgress body={detail.body} color={col.color} />
         <pre className="flex-1 min-h-0 overflow-auto whitespace-pre-wrap text-sm text-text-dim bg-elevated border border-line rounded-lg p-3">
           {detail.body}
         </pre>
@@ -377,6 +404,7 @@ export function MoiraBoard() {
                       </span>
                       {t.idea && <span className="ds-badge warn">Idee</span>}
                     </span>
+                    {t.status !== 'done' && <PlanProgress body={t.body} color={col.color} />}
                     <span className="flex items-center gap-2 min-w-0 text-xs text-text-muted">
                       {t.project && <ProjectChip name={t.project} />}
                       <span className="ml-auto whitespace-nowrap">
