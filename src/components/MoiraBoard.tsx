@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowLeft, ArrowRight, Archive, ExternalLink, Inbox, Plus, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Archive, Copy, ExternalLink, Inbox, Plus, X } from 'lucide-react';
 import type { MoiraActivity, MoiraStatus, MoiraTask } from '../../shared/types';
 import { apiFetch } from '../lib/api';
 import { toast } from '../lib/toast';
@@ -150,6 +150,38 @@ const LiveActivity = ({ activity }: { activity?: MoiraActivity }) => {
       <span className="w-2 h-2 shrink-0 rounded-full bg-accent animate-pulse" aria-hidden="true" />
       <span className="truncate">{activity.summary || 'Arbeitet'}</span>
     </span>
+  );
+};
+
+// Slash command that starts work on the task; copying it is a deliberate act of focusing on one task.
+const moiraCommand = (t: MoiraTask): string | null => {
+  if (t.status === 'done') return null;
+  if (t.status === 'review') return `/moira-review ${t.number}`;
+  return t.idea ? `/moira-new ${t.number}` : `/moira ${t.number}`;
+};
+
+const CopyCommand = ({ task }: { task: MoiraTask }) => {
+  const cmd = moiraCommand(task);
+  if (!cmd) return null;
+  return (
+    <button
+      type="button"
+      className="ds-btn sm icon"
+      draggable={false}
+      aria-label={`Befehl kopieren: ${cmd}`}
+      title={cmd}
+      onClick={async e => {
+        e.stopPropagation();
+        try {
+          await navigator.clipboard.writeText(cmd);
+          toast(`Kopiert: ${cmd}`, 'success');
+        } catch {
+          toast('Kopieren fehlgeschlagen');
+        }
+      }}
+    >
+      <Copy />
+    </button>
   );
 };
 
@@ -315,6 +347,7 @@ export function MoiraBoard() {
               <ExternalLink />
             </button>
           )}
+          <CopyCommand task={detail} />
           <button
             className="ds-btn sm icon"
             disabled={busy}
@@ -411,8 +444,10 @@ export function MoiraBoard() {
               </div>
               <div className="flex flex-col gap-2 @4xl:overflow-auto @4xl:min-h-0">
                 {items.map(t => (
-                  <button
+                  <div
                     key={t.file}
+                    role="button"
+                    tabIndex={0}
                     draggable
                     onDragStart={() => setDragging(t.file)}
                     onDragEnd={() => {
@@ -420,6 +455,12 @@ export function MoiraBoard() {
                       setDropTarget(null);
                     }}
                     onClick={() => setSelected(t.file)}
+                    onKeyDown={e => {
+                      if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                        e.preventDefault();
+                        setSelected(t.file);
+                      }
+                    }}
                     className={`flex flex-col gap-2 p-3 text-left rounded-md border border-line bg-elevated shadow-sm cursor-grab transition hover:border-line-strong hover:shadow-md active:cursor-grabbing ${
                       dragging === t.file ? 'opacity-40' : ''
                     }`}
@@ -437,8 +478,9 @@ export function MoiraBoard() {
                       <span className="ml-auto whitespace-nowrap">
                         {t.number} · {t.created}
                       </span>
+                      <CopyCommand task={t} />
                     </span>
-                  </button>
+                  </div>
                 ))}
                 {col.status === 'todo' && (
                   <button
