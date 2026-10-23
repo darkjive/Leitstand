@@ -31,7 +31,13 @@ import {
 } from './services/gitStatus.js';
 import { getDockerInfo } from './services/docker.js';
 import { isPrivateHost } from './services/netGuard.js';
-import { listTasks, setStatus, archiveTask, startPreview } from './services/moiraTasks.js';
+import {
+  listTasks,
+  setStatus,
+  archiveTask,
+  createTask,
+  startPreview,
+} from './services/moiraTasks.js';
 import type { IncomingMessage } from 'http';
 
 // Sensitive system paths that must never be touched by git operations
@@ -217,6 +223,33 @@ app.get('/api/moira/tasks', generalLimiter, async (req, res) => {
   } catch (error) {
     console.error('Failed to list Moira tasks:', error);
     res.status(500).json({ error: 'Failed to list Moira tasks' });
+  }
+});
+
+const moiraCreateSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(1)
+    .max(200)
+    .regex(/^[^\r\n]+$/),
+  project: z
+    .string()
+    .trim()
+    .max(100)
+    .regex(/^[^\r\n]*$/)
+    .default(''),
+  body: z.string().max(20_000).default(''),
+});
+
+app.post('/api/moira/tasks', generalLimiter, async (req, res) => {
+  const parsed = moiraCreateSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid task' });
+  try {
+    res.json(await createTask(parsed.data));
+  } catch (error) {
+    console.error('Failed to create Moira task:', error);
+    res.status(500).json({ error: 'Failed to create task' });
   }
 });
 

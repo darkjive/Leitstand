@@ -13,7 +13,7 @@ const PROJECTS_DIR = join(homedir(), 'Dev');
 const STATUSES: readonly MoiraStatus[] = ['todo', 'doing', 'review', 'done'];
 const FILE_RE = /^\d{3}-[a-z0-9-]+\.md$/;
 
-export function isTaskFile(name: string): boolean {
+function isTaskFile(name: string): boolean {
   return FILE_RE.test(name);
 }
 
@@ -39,6 +39,7 @@ async function parseTask(file: string): Promise<MoiraTask> {
     project: meta.project ?? '',
     created: meta.created ?? '',
     body,
+    idea: status === 'todo' && !/^## Plan\b/m.test(body),
     preview: meta.preview ?? '',
     previewCmd: meta.preview_cmd ?? '',
   };
@@ -100,6 +101,49 @@ export async function setStatus(file: string, status: MoiraStatus): Promise<void
   task.status = status;
   await saveTask(task);
   cache = null;
+}
+
+const SLUG_MAP: Record<string, string> = { ä: 'ae', ö: 'oe', ü: 'ue', ß: 'ss' };
+
+function slugify(title: string): string {
+  const slug = title
+    .toLowerCase()
+    .replace(/[äöüß]/g, c => SLUG_MAP[c])
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 50)
+    .replace(/-+$/, '');
+  return slug || 'aufgabe';
+}
+
+/** Create a task file with the next free number (tasks/ and archive/ together), like the TUI. */
+export async function createTask(input: {
+  title: string;
+  project: string;
+  body: string;
+}): Promise<MoiraTask> {
+  await mkdir(TASK_DIR, { recursive: true });
+  const names = [
+    ...(await readdir(TASK_DIR)),
+    ...(await readdir(ARCHIVE_DIR).catch(() => [] as string[])),
+  ].filter(isTaskFile);
+  const next = Math.max(0, ...names.map(n => Number(n.slice(0, 3)))) + 1;
+  const file = `${String(next).padStart(3, '0')}-${slugify(input.title)}.md`;
+  const task: MoiraTask = {
+    file,
+    number: file.split('-', 1)[0],
+    title: input.title,
+    status: 'todo',
+    project: input.project,
+    created: new Date().toLocaleDateString('sv-SE'),
+    body: input.body,
+    idea: true,
+    preview: '',
+    previewCmd: '',
+  };
+  await saveTask(task);
+  cache = null;
+  return task;
 }
 
 export async function archiveTask(file: string): Promise<void> {

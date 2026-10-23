@@ -143,6 +143,8 @@ export interface MoiraTask {
   project: string;
   created: string;
   body: string;
+  /** todo without a `## Plan` section: raw idea that still needs formulating and planning. */
+  idea: boolean;
   preview: string;
   previewCmd: string;
 }

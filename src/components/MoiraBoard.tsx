@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowLeft, ArrowRight, Archive, ExternalLink, Inbox, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Archive, ExternalLink, Inbox, Plus, X } from 'lucide-react';
 import type { MoiraStatus, MoiraTask } from '../../shared/types';
 import { apiFetch } from '../lib/api';
 import { toast } from '../lib/toast';
+import { useSettingJSON } from '../lib/settings';
 
 const COLUMNS: { status: MoiraStatus; label: string; color: string }[] = [
   { status: 'todo', label: 'Offen', color: 'var(--sig-grey)' },
@@ -20,6 +21,100 @@ const projectColor = (name: string) => {
   return `var(--cat-${hash + 1})`;
 };
 
+function NewTaskDialog({
+  projects,
+  onClose,
+  onCreated,
+}: {
+  projects: string[];
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  const ref = useRef<HTMLDialogElement>(null);
+  const [title, setTitle] = useState('');
+  const [project, setProject] = useState('');
+  const [body, setBody] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    ref.current?.showModal();
+  }, []);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      const res = await apiFetch('/api/moira/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, project, body }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error ?? 'Request failed');
+      onCreated();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Request failed');
+      setSaving(false);
+    }
+  };
+
+  return (
+    <dialog ref={ref} className="ds-dialog" onClose={onClose}>
+      <form className="ds-dialog-body" onSubmit={submit}>
+        <h3 className="ds-dialog-title">Neue Idee</h3>
+        <p className="ds-dialog-text">
+          Roh festhalten genügt. Claude formuliert die Idee sauber und plant sie mit /moira-new.
+        </p>
+        <label className="flex flex-col gap-1">
+          <span className="ds-label">Titel</span>
+          <input
+            className="ds-input"
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            maxLength={200}
+            required
+            autoFocus
+          />
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="ds-label">Projekt</span>
+          <input
+            className="ds-input"
+            list="moira-projects"
+            value={project}
+            onChange={e => setProject(e.target.value)}
+            maxLength={100}
+          />
+          <datalist id="moira-projects">
+            {projects.map(p => (
+              <option key={p} value={p} />
+            ))}
+          </datalist>
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="ds-label">Idee</span>
+          <textarea
+            className="ds-input"
+            value={body}
+            onChange={e => setBody(e.target.value)}
+            maxLength={20000}
+          />
+        </label>
+        <p className="ds-dialog-error">{error}</p>
+        <div className="ds-dialog-actions">
+          <button type="button" className="ds-btn" onClick={() => ref.current?.close()}>
+            Abbrechen
+          </button>
+          <button type="submit" className={`ds-btn primary ${saving ? 'busy' : ''}`}>
+            Festhalten
+          </button>
+        </div>
+      </form>
+    </dialog>
+  );
+}
+
 const ProjectChip = ({ name }: { name: string }) => (
   <span className="ds-chip" style={{ '--c': projectColor(name) } as React.CSSProperties}>
     {name}
@@ -32,6 +127,8 @@ export function MoiraBoard() {
   const [project, setProject] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [hidden, setHidden] = useSettingJSON<MoiraStatus[]>('moira-hidden-columns', []);
   const [dragging, setDragging] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<MoiraStatus | null>(null);
   const etag = useRef('');
@@ -110,6 +207,7 @@ export function MoiraBoard() {
 
   const projects = [...new Set(tasks.map(t => t.project).filter(Boolean))].sort();
   const visible = tasks.filter(t => !project || t.project === project);
+  const shownColumns = COLUMNS.filter(c => !hidden.includes(c.status));
   const detail = tasks.find(t => t.file === selected);
 
   if (error && tasks.length === 0) {
@@ -133,6 +231,7 @@ export function MoiraBoard() {
               <span className="ds-chip" style={{ '--c': col.color } as React.CSSProperties}>
                 {col.label}
               </span>
+              {detail.idea && <span className="ds-badge warn">Idee</span>}
               {detail.project && <ProjectChip name={detail.project} />}
               <span>
                 {detail.number} · {detail.created}
@@ -198,9 +297,36 @@ export function MoiraBoard() {
           ))}
         </select>
         <span className="text-xs text-text-muted">{visible.length} Aufgaben</span>
+        <div className="flex items-center gap-1 ml-2" role="group" aria-label="Spalten">
+          {COLUMNS.map(col => {
+            const shown = !hidden.includes(col.status);
+            return (
+              <button
+                key={col.status}
+                aria-pressed={shown}
+                onClick={() =>
+                  setHidden(shown ? [...hidden, col.status] : hidden.filter(s => s !== col.status))
+                }
+                className={`ds-chip cursor-pointer ${shown ? '' : 'empty'}`}
+                style={{ '--c': shown ? col.color : undefined } as React.CSSProperties}
+              >
+                {col.label}
+              </button>
+            );
+          })}
+        </div>
+        <button className="ds-btn sm primary ml-auto" onClick={() => setCreating(true)}>
+          <Plus />
+          Idee
+        </button>
       </div>
-      <div className="grid grid-cols-1 @xl:grid-cols-2 @4xl:grid-cols-4 gap-3 @4xl:flex-1 @4xl:min-h-0">
-        {COLUMNS.map(col => {
+      <div
+        className="grid grid-cols-1 @xl:grid-cols-2 @4xl:grid-cols-(--cols) gap-3 @4xl:flex-1 @4xl:min-h-0"
+        style={
+          { '--cols': `repeat(${shownColumns.length || 1}, minmax(0, 1fr))` } as React.CSSProperties
+        }
+      >
+        {shownColumns.map(col => {
           const items = visible.filter(t => t.status === col.status);
           const isTarget = dropTarget === col.status;
           return (
@@ -245,7 +371,12 @@ export function MoiraBoard() {
                       dragging === t.file ? 'opacity-40' : ''
                     }`}
                   >
-                    <span className="text-sm font-medium text-text line-clamp-2">{t.title}</span>
+                    <span className="flex items-start gap-2">
+                      <span className="flex-1 text-sm font-medium text-text line-clamp-2">
+                        {t.title}
+                      </span>
+                      {t.idea && <span className="ds-badge warn">Idee</span>}
+                    </span>
                     <span className="flex items-center gap-2 min-w-0 text-xs text-text-muted">
                       {t.project && <ProjectChip name={t.project} />}
                       <span className="ml-auto whitespace-nowrap">
@@ -254,6 +385,15 @@ export function MoiraBoard() {
                     </span>
                   </button>
                 ))}
+                {col.status === 'todo' && (
+                  <button
+                    className="ds-btn sm ghost justify-start text-text-muted"
+                    onClick={() => setCreating(true)}
+                  >
+                    <Plus />
+                    Idee hinzufügen
+                  </button>
+                )}
                 {items.length === 0 && (
                   <div className="flex flex-col items-center gap-1 py-6 text-xs text-text-muted border border-dashed border-line rounded-md">
                     <Inbox className="w-5 h-5" />
@@ -265,6 +405,17 @@ export function MoiraBoard() {
           );
         })}
       </div>
+      {creating && (
+        <NewTaskDialog
+          projects={projects}
+          onClose={() => setCreating(false)}
+          onCreated={() => {
+            setCreating(false);
+            etag.current = '';
+            load();
+          }}
+        />
+      )}
     </div>
   );
 }
